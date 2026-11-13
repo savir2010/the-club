@@ -1,26 +1,549 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------
+   The Club — design tokens (single source of truth)
+   --------------------------------------------------------------- */
+@theme {
+  --color-canvas: #f7f2ea;
+  --color-raised: #fffdf9;
+  --color-raised-2: #efe6d8;
+  --color-ivory: #2b261f;
+  --color-muted: #6c6457;
+  --color-faint: #827969;
+  --color-brass: #8d6b3d;
+  --color-brass-hi: #a07c4a;
+  --color-brass-lo: #6f532c;
+  --color-light: #ebe1cf;
+  --color-ink: #2b261f;
+  --color-on-brass: #fffaf2;
+  --color-sage: #6f8a68;
+  --color-clay: #b4593f;
+  --color-hairline: rgb(43 38 31 / 0.12);
+  --color-hairline-strong: rgb(43 38 31 / 0.2);
+
+  --font-display: var(--font-manrope), Manrope, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), Manrope, ui-sans-serif, system-ui, sans-serif;
+
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-panel: 16px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  --shadow-float: 0 18px 48px -12px rgb(60 44 20 / 0.16), 0 2px 6px rgb(60 44 20 / 0.08);
+
+  --animate-slide-in: slide-in 260ms var(--ease-out) both;
+  --animate-row-glow: row-glow 1600ms var(--ease-out) both;
+  --animate-fade-up: fade-up 320ms var(--ease-out) both;
+}
+
+/* Dark theme: the shop's moon toggle sets data-theme="dark" on <html>. Same warm palette, lights off. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --map-ground: #efe7da;
+  --map-block: #e7dccb;
+  --map-road: #fffdf9;
+}
+:root[data-theme="dark"] {
+  --color-canvas: #15120e;
+  --color-raised: #1f1b16;
+  --color-raised-2: #2b251e;
+  --color-ivory: #f1e9dc;
+  --color-muted: #b2a792;
+  --color-faint: #918671;
+  --color-brass: #c9a46a;
+  --color-brass-hi: #d8b680;
+  --color-brass-lo: #a8854f;
+  --color-light: #2b251e;
+  --color-ink: #f1e9dc;
+  --color-on-brass: #1a1611;
+  --color-sage: #8fae86;
+  --color-clay: #d9805f;
+  --color-hairline: rgb(241 233 220 / 0.1);
+  --color-hairline-strong: rgb(241 233 220 / 0.18);
+  --shadow-float: 0 18px 48px -12px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.4);
+  --map-ground: #1d1914;
+  --map-block: #26211a;
+  --map-road: #3a332a;
+  --art-plinth-hi: #2e2820;
+  --art-plinth-lo: #221d17;
+  --art-floor: #1b1712;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .icon-btn:hover { background: rgb(241 233 220 / 0.08); }
+:root[data-theme="dark"] .field:hover { border-color: rgb(241 233 220 / 0.3); }
+:root[data-theme="dark"] .aurora { background: linear-gradient(160deg, #2a241c 0%, #1f1a14 55%, #15120e 100%); }
+:root[data-theme="dark"] .aurora-c { opacity: 0.25; }
+html { transition: background-color 200ms; }
+
+@keyframes slide-in {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes row-glow {
+  0% { background-color: rgb(141 107 61 / 0.16); }
+  100% { background-color: transparent; }
+}
+@keyframes fade-up {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes scroll-cue {
+  0% { transform: translateY(-100%); }
+  60%, 100% { transform: translateY(200%); }
+}
+@keyframes caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ---------------------------------------------------------------
+   Base
+   --------------------------------------------------------------- */
+@layer base {
+  html {
+    color-scheme: light;
+    background: var(--color-canvas);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ivory);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+  }
+  ::selection {
+    background: rgb(141 107 61 / 0.38);
+    color: var(--color-ivory);
+  }
+  input, textarea {
+    caret-color: var(--color-brass);
+  }
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(43 38 31 / 0.18) transparent;
+  }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(43 38 31 / 0.16);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-track { background: transparent; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---------------------------------------------------------------
+   Primitives
+   --------------------------------------------------------------- */
+@layer components {
+  .display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+  .num {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums tabular-nums;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .smallcaps {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 46px;
+    padding: 0 1.25rem;
+    border-radius: var(--radius-control);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+    transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out),
+      color 160ms var(--ease-out), transform 120ms var(--ease-out);
+    user-select: none;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn:disabled, .btn[aria-disabled="true"] {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+  .btn-lg { height: 52px; padding: 0 1.6rem; font-size: 16px; }
+  .btn-sm { height: 36px; padding: 0 0.85rem; font-size: 14px; }
+
+  .btn-primary {
+    background: var(--color-brass);
+    color: var(--color-on-brass);
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--color-brass-hi); }
+
+  .btn-outline {
+    border: 1px solid var(--color-hairline-strong);
+    color: var(--color-ivory);
+    background: transparent;
+  }
+  .btn-outline:hover:not(:disabled) {
+    border-color: rgb(43 38 31 / 0.42);
+    background: rgb(43 38 31 / 0.04);
+  }
+
+  .btn-text {
+    height: auto;
+    padding: 0;
+    color: var(--color-ivory);
+    text-decoration: underline;
+    text-decoration-color: rgb(43 38 31 / 0.3);
+    text-underline-offset: 0.25em;
+  }
+  .btn-text:hover { text-decoration-color: var(--color-brass); }
+
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-control);
+    color: var(--color-muted);
+    transition: color 160ms, background-color 160ms;
+  }
+  .icon-btn:hover { color: var(--color-ivory); background: rgb(43 38 31 / 0.06); }
+
+  .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ivory);
+    margin-bottom: 0.4rem;
+  }
+  .field-help {
+    font-size: 13px;
+    color: var(--color-muted);
+    margin-top: 0.4rem;
+  }
+  .field {
+    width: 100%;
+    height: 48px;
+    padding: 0 0.95rem;
+    border-radius: var(--radius-control);
+    background: var(--color-raised);
+    border: 1px solid var(--color-hairline-strong);
+    color: var(--color-ivory);
+    font-size: 16px;
+    transition: border-color 160ms, background-color 160ms;
+  }
+  .field::placeholder { color: var(--color-faint); }
+  .field:hover { border-color: rgb(43 38 31 / 0.32); }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-brass);
+    box-shadow: 0 0 0 3px rgb(141 107 61 / 0.22);
+  }
+  .field[aria-invalid="true"] { border-color: var(--color-clay); }
+
+  .hairline { border-color: var(--color-hairline); }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-hairline-strong);
+    font-size: 14px;
+    color: var(--color-ivory);
+    white-space: nowrap;
+    transition: border-color 160ms, background-color 160ms;
+  }
+  .chip:hover { border-color: var(--color-brass); background: rgb(141 107 61 / 0.08); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    height: 24px;
+    padding: 0 0.55rem;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-muted);
+    border: 1px solid var(--color-hairline-strong);
+  }
+
+  .container-club {
+    width: 100%;
+    max-width: 1320px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  @media (min-width: 768px) {
+    .container-club { padding-inline: 40px; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Landing reveal: only applied to blocks that start below the fold */
+html.reveal-ready .reveal-pending {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out);
+}
+html.reveal-ready .reveal-pending.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Aurora — moving light in place of photography
+   --------------------------------------------------------------- */
+.aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(160deg, #fbf7f0 0%, #f1e7d6 55%, #e8dbc4 100%);
+}
+.aurora > span {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+.aurora-a {
+  width: 95%; height: 70%; left: -20%; top: -10%;
+  background: radial-gradient(closest-side, rgb(201 164 106 / 0.62), rgb(201 164 106 / 0) 100%);
+  animation: aurora-a 19s;
+}
+.aurora-b {
+  width: 80%; height: 90%; right: -25%; top: 20%;
+  background: radial-gradient(closest-side, rgb(226 190 150 / 0.7), rgb(226 190 150 / 0) 100%);
+  animation: aurora-b 23s;
+}
+.aurora-c {
+  width: 120%; height: 38%; left: -10%; top: 38%;
+  background: radial-gradient(closest-side, rgb(255 253 247 / 0.95), rgb(255 253 247 / 0) 100%);
+  animation: aurora-c 16s;
+}
+.aurora-d {
+  width: 70%; height: 60%; left: 10%; bottom: -25%;
+  background: radial-gradient(closest-side, rgb(141 107 61 / 0.42), rgb(141 107 61 / 0) 100%);
+  animation: aurora-d 27s;
+}
+.aurora-calm > span { animation-duration: 34s; }
+.aurora > span { animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out; }
+@keyframes aurora-a {
+  from { transform: translate(0, 0) rotate(0deg) scale(1); }
+  to { transform: translate(22%, 18%) rotate(25deg) scale(1.15); }
+}
+@keyframes aurora-b {
+  from { transform: translate(0, 0) scale(1.1); }
+  to { transform: translate(-30%, -16%) scale(0.9); }
+}
+@keyframes aurora-c {
+  from { transform: translate(-8%, -20%) rotate(-12deg) scaleY(0.8); }
+  to { transform: translate(8%, 25%) rotate(10deg) scaleY(1.3); }
+}
+@keyframes aurora-d {
+  from { transform: translate(0, 0) scale(0.9); }
+  to { transform: translate(25%, -35%) scale(1.2); }
+}
+
+/* ---------------------------------------------------------------
+   Nora chat window — springs out of the launcher, folds back into it
+   --------------------------------------------------------------- */
+@keyframes chat-in {
+  0% { opacity: 0; transform: translate(10px, 18px) scale(0.42); border-radius: 48px; }
+  45% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes chat-out {
+  0% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translate(10px, 18px) scale(0.5); border-radius: 48px; }
+}
+@keyframes chat-part {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes avatar-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes launcher-ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+.chat-window { transform-origin: 100% 100%; animation: chat-in 560ms cubic-bezier(0.34, 1.32, 0.64, 1) both; }
+.chat-window[data-leaving="true"] { animation: chat-out 220ms var(--ease-in) both; }
+@media (max-width: 639px) { .chat-window { transform-origin: 50% 100%; } }
+.chat-part { animation: chat-part 420ms var(--ease-out) both; }
+.avatar-pop { animation: avatar-pop 520ms cubic-bezier(0.34, 1.4, 0.64, 1) 140ms both; }
+.launcher-ring::before {
+  content: "";
+  position: absolute;
+  inset: 6px auto 6px 6px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-brass);
+  animation: launcher-ring 1.6s var(--ease-out) 1.2s 3 both;
+  pointer-events: none;
+}
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+.typing-dot { animation: typing-dot 1.1s ease-in-out infinite; }
+@keyframes scan {
+  0% { top: 8%; }
+  50% { top: 90%; }
+  100% { top: 8%; }
+}
+.scan-line { animation: scan 1.6s ease-in-out infinite; }
+
+/* Voice mode: a soft ring breathes around the mic while Nora is listening. */
+.voice-ring { box-shadow: 0 0 0 0 rgb(141 107 61 / 0.55); animation: voice-ring 1.4s var(--ease-out) infinite; }
+@keyframes voice-ring {
+  0% { box-shadow: 0 0 0 0 rgb(141 107 61 / 0.55); }
+  100% { box-shadow: 0 0 0 10px rgb(141 107 61 / 0); }
+}
+@media (prefers-reduced-motion: reduce) { .voice-ring { animation: none; box-shadow: 0 0 0 3px rgb(141 107 61 / 0.35); } }
+
+/* Simulated iMessage thread (demo/imessage) */
+.imsg-in { animation: imsg-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes imsg-in {
+  from { transform: translateY(10px) scale(0.96); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.imsg-tail-me::after, .imsg-tail-them::after {
+  content: ""; position: absolute; bottom: 0; width: 14px; height: 18px; background: inherit;
+}
+.imsg-tail-me::after { right: -5px; border-bottom-left-radius: 14px 12px; clip-path: path("M0 0 C 2 10, 6 15, 14 18 C 6 18, 2 17, 0 15 Z"); }
+.imsg-tail-them::after { left: -5px; border-bottom-right-radius: 14px 12px; clip-path: path("M14 0 C 12 10, 8 15, 0 18 C 8 18, 12 17, 14 15 Z"); }
+
+/* Nora's cursor: the ring on what she's about to click, and the click ripple */
+.nora-target {
+  outline: 2px solid #8d6b3d !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px rgb(141 107 61 / 0.18) !important;
+  transition: outline-offset 200ms, box-shadow 200ms;
+  border-radius: 10px;
+}
+.nora-ripple {
+  position: fixed; z-index: 94; width: 44px; height: 44px; border-radius: 999px;
+  border: 2px solid #8d6b3d; pointer-events: none;
+  animation: nora-ripple 560ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes nora-ripple { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(1.8); opacity: 0; } }
+
+/* ---------------------------------------------------------------
+   Store chrome: the espresso top bar (same in light and dark).
+   Re-maps the tokens for everything inside it, so shared parts
+   (wordmark, theme toggle, icons) read correctly on the dark bar.
+   --------------------------------------------------------------- */
+.bar {
+  --color-ivory: #f3ece0;
+  --color-muted: #b9ae9a;
+  --color-faint: #93887450;
+  --color-brass: #cfa96c;
+  --color-brass-hi: #ddb97f;
+  --color-on-brass: #17130f;
+  --color-hairline: rgb(243 236 224 / 0.1);
+  --color-hairline-strong: rgb(243 236 224 / 0.2);
+  background: #17130f;
+  color: var(--color-ivory);
+}
+.bar-2 { background: #221c16; }
+:root[data-theme="dark"] .bar { background: #0e0b08; }
+:root[data-theme="dark"] .bar-2 { background: #19140f; }
+.bar .icon-btn:hover { background: rgb(243 236 224 / 0.08); }
+.bar-link {
+  border-radius: 8px;
+  outline: 1px solid transparent;
+  transition: outline-color 140ms;
+}
+.bar-link:hover { outline-color: rgb(243 236 224 / 0.45); }
+
+/* Store price: dollars large, cents raised (the shopping convention) */
+.price {
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+}
+.price > .cur, .price > .cents { font-size: 0.48em; margin-top: 0.12em; letter-spacing: 0; }
+.price > .cents { margin-left: 0.04em; }
+
+/* Horizontal product rails */
+.rail { scroll-snap-type: x proximity; scrollbar-width: none; }
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; }
+
+/* Membership turn at checkout */
+@keyframes seal-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes ring-out {
+  from { transform: scale(1); opacity: 0.55; }
+  to { transform: scale(2.1); opacity: 0; }
+}
+/* Panels that open from the bar (account menu) go back to the page palette */
+.bar .unbar {
+  --color-ivory: #2b261f; --color-muted: #6c6457; --color-faint: #827969;
+  --color-brass: #8d6b3d; --color-brass-hi: #a07c4a; --color-on-brass: #fffaf2;
+  --color-hairline: rgb(43 38 31 / 0.12); --color-hairline-strong: rgb(43 38 31 / 0.2);
+  color: var(--color-ivory);
+}
+:root[data-theme="dark"] .bar .unbar {
+  --color-ivory: #f1e9dc; --color-muted: #b2a792; --color-faint: #918671;
+  --color-brass: #c9a46a; --color-brass-hi: #d8b680; --color-on-brass: #1a1611;
+  --color-hairline: rgb(241 233 220 / 0.1); --color-hairline-strong: rgb(241 233 220 / 0.18);
+}
+@keyframes hook-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); transform-origin: bottom right; }
+  to { opacity: 1; transform: none; }
 }

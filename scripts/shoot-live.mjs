@@ -1,0 +1,22 @@
+// End-to-end against the live Python agent: open the chat, let Nora greet, ask her to buy and check out.
+import { chromium } from "playwright";
+const OUT = ".impeccable/review/shop";
+const ASK = process.argv[2] ?? "Add the Desert Bloom Balm and check out";
+const b = await chromium.launch({ channel: "chrome" });
+const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+p.on("pageerror", (e) => console.log("pageerror:", e.message));
+await p.goto("http://localhost:3100/?nogate"); await p.evaluate(() => { localStorage.setItem("club-age-ok", "1"); sessionStorage.clear(); });
+await p.goto("http://localhost:3100/shop", { waitUntil: "networkidle" });
+await p.getByRole("button", { name: /your concierge/ }).click();
+await p.locator('[aria-label="Suggested replies"]').waitFor({ timeout: 90000 });
+await p.screenshot({ path: `${OUT}/live-1-greeting.png` });
+console.log("greeting:", (await p.locator('section[role=dialog] ol').innerText()).replace(/\s+/g, " ").slice(0, 300));
+await p.locator("#msg").fill(ASK); await p.keyboard.press("Enter");
+await p.locator("[data-status-art]").first().waitFor({ timeout: 90000 });
+await p.waitForTimeout(500); await p.screenshot({ path: `${OUT}/live-2-adding.png` });
+await p.locator("#review-order").waitFor({ timeout: 90000 });
+await p.waitForTimeout(900); await p.screenshot({ path: `${OUT}/live-3-cart.png` });
+await p.waitForURL("**/checkout", { timeout: 90000 }); await p.waitForTimeout(1200);
+await p.screenshot({ path: `${OUT}/live-4-checkout.png` });
+console.log("url:", p.url());
+await b.close();

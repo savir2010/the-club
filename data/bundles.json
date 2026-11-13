@@ -1,0 +1,16 @@
+[
+  {
+    "brand": "Copperstate",
+    "category": "Flower",
+    "format": "3.5 g (1/8 oz)",
+    "min_qty": 2,
+    "price_each": 32
+  },
+  {
+    "brand": "Copperstate",
+    "category": "Edibles",
+    "format": "100 mg pack",
+    "min_qty": 2,
+    "price_each": 25
+  }
+]

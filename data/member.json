@@ -1,0 +1,61 @@
+{
+  "first": "Dana",
+  "last": "Whitfield",
+  "email": "dana.w@example.com",
+  "phone": "(602) 555-0147",
+  "since": "March 2026",
+  "plan": "Club Monthly",
+  "address": "418 Ocotillo Lane, Phoenix, AZ 85018",
+  "bank": "Checking ••••1234",
+  "likes": [
+    "Citrus flavors",
+    "Sativa-leaning hybrids for evenings out",
+    "Jukebox vapes"
+  ],
+  "dislikes": [
+    "Heavy indicas",
+    "Strong pine flavors"
+  ],
+  "pastOrders": [
+    {
+      "id": "CL-20418",
+      "date": "Oct 24, 2026",
+      "items": [
+        "Pineapple Haze Distillate Cartridge",
+        "Pink Lemonade Live Rosin Gummies"
+      ],
+      "total": 59.4
+    },
+    {
+      "id": "CL-20177",
+      "date": "Oct 3, 2026",
+      "items": [
+        "LA Baker Limited Harvest Flower × 2"
+      ],
+      "total": 72
+    },
+    {
+      "id": "CL-19902",
+      "date": "Sep 12, 2026",
+      "items": [
+        "Cap Junky Preroll 14 Party Pack",
+        "Blue Raspberry Live Rosin Gummies"
+      ],
+      "total": 77.4
+    }
+  ],
+  "addresses": [
+    {
+      "id": "work",
+      "label": "Work",
+      "line": "1200 Mesquite Plaza, Suite 310, Phoenix, AZ 85016",
+      "note": "Used last time"
+    },
+    {
+      "id": "home",
+      "label": "Home",
+      "line": "418 Ocotillo Lane, Phoenix, AZ 85018",
+      "note": ""
+    }
+  ]
+}

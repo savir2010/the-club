@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# impeccable runtime captures
+.impeccable/review/
+
+# python agent
+agent/.venv/
+__pycache__/
+!.env.example

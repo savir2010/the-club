@@ -1,0 +1,138 @@
+[
+ {
+  "id": "title",
+  "card": "title"
+ },
+ {
+  "id": "end",
+  "card": "end"
+ },
+ {
+  "id": "c_welcome",
+  "k": "The Club",
+  "t": "A members-only cannabis concierge",
+  "s": "Phoenix delivery, member pricing on everything, and a concierge named Nora."
+ },
+ {
+  "id": "c_join",
+  "k": "Join",
+  "t": "Membership in about five minutes",
+  "s": "Account, age and ID, medical card, bank and plan, in one calm flow."
+ },
+ {
+  "id": "c_verify",
+  "k": "Verification",
+  "t": "ID and medical card checks, live",
+  "s": "Scan both sides, watch each check tick through. Simulated for the demo."
+ },
+ {
+  "id": "c_bank",
+  "k": "Pay by bank",
+  "t": "Link a bank, skip the cards",
+  "s": "Orders are paid straight from checking."
+ },
+ {
+  "id": "c_shelf",
+  "k": "The shelf",
+  "t": "Real Arizona products, member prices",
+  "s": "Flower, pre-rolls, vapes, edibles, concentrates and topicals."
+ },
+ {
+  "id": "c_product",
+  "k": "Product pages",
+  "t": "Everything needed to decide",
+  "s": "Potency, format, effects, bundle deals and member reviews."
+ },
+ {
+  "id": "c_voice",
+  "k": "Meet Nora",
+  "t": "Tap the mic and just talk",
+  "s": "Voice mode: Nora listens, answers out loud, and keeps the chat on screen.",
+  "w": 640
+ },
+ {
+  "id": "c_ask1",
+  "k": "You say",
+  "q": "My back hurts. I want something relaxing under $20.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "c_picks",
+  "k": "Real products",
+  "t": "She searches the shelf and shows two picks",
+  "s": "Listed effects, under budget. No medical claims, and a nudge to see a doctor if it keeps up.",
+  "w": 640
+ },
+ {
+  "id": "c_ask2",
+  "k": "Follow-ups",
+  "q": "Which one do you recommend?",
+  "s": "Ask her anything, the way you'd ask a budtender.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "c_add",
+  "k": "Cart by voice",
+  "q": "I'll take the patch. Add it to my cart.",
+  "s": "Added, then she points out older items still in the cart.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "c_tidy",
+  "k": "Tidy up",
+  "q": "Remove all the extra items.",
+  "s": "Three items gone in one sentence.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "c_pay",
+  "k": "Pay now",
+  "q": "Deliver it to my home address at 8 p.m.",
+  "s": "Nora confirms the plan out loud, then takes over checkout.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "c_cursor",
+  "k": "Nora's cursor",
+  "t": "She checks out for you, in front of you",
+  "s": "Home address, the 8–9 PM window, pay by bank. Every click is real, and you can stop her anytime."
+ },
+ {
+  "id": "c_track",
+  "k": "Tracking",
+  "t": "Your order, live",
+  "s": "Delivery window, the driver on the way, and an ID check at the door."
+ },
+ {
+  "id": "c_text",
+  "k": "Nora by text",
+  "t": "Or just text her",
+  "s": "The same Nora over iMessage. Products arrive as tappable links.",
+  "w": 640
+ },
+ {
+  "id": "c_text2",
+  "k": "Two picks, as links",
+  "q": "My back's been sore after the gym.",
+  "s": "Two topicals, each with a photo and the member price.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "c_text3",
+  "k": "Done",
+  "q": "The first one please.",
+  "s": "Added to the cart. Free delivery, ready to check out.",
+  "w": 640,
+  "who": "me"
+ },
+ {
+  "id": "bg",
+  "card": "bg"
+ }
+]

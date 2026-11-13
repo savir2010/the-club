@@ -1,0 +1,20 @@
+// Live: switch on the simulated phone, let Nora text the cart, reply YES, land on tracking.
+import { chromium } from "playwright";
+const OUT = ".impeccable/review/shop";
+const b = await chromium.launch({ channel: "chrome" });
+const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+p.on("pageerror", (e) => console.log("pageerror:", e.message));
+await p.goto("http://localhost:3100/?nogate"); await p.evaluate(() => { localStorage.setItem("club-age-ok", "1"); sessionStorage.clear(); });
+await p.goto("http://localhost:3100/shop", { waitUntil: "networkidle" });
+await p.getByRole("button", { name: "Show phone" }).click();
+const thread = p.locator('[aria-label="Simulated phone"] [aria-live]');
+await thread.locator("p.chat-part").first().waitFor({ timeout: 90000 });
+await p.waitForTimeout(600);
+console.log("sms:", (await thread.innerText()).replace(/\s+/g, " "));
+await p.screenshot({ path: `${OUT}/phone-1-text.png` });
+await p.locator("#sms").fill("YES");
+await p.locator('[aria-label="Simulated phone"] button[aria-label="Send"]:not([disabled])').waitFor({ timeout: 60000 });
+await p.keyboard.press("Enter");
+await p.waitForURL("**/orders/**", { timeout: 20000 }); await p.waitForTimeout(1200);
+console.log("url:", p.url());
+await b.close();

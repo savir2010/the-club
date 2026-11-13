@@ -1,0 +1,22 @@
+{
+  "_about": "Scripted iMessages from Nora, sent from this Mac's Messages app to NORA_IMESSAGE_TO. {first}, {count}, {total}, {order}, {driver} and {eta} are filled in when the texts are sent.",
+  "gap_seconds": 2.2,
+  "start": [
+    "Hi {first}, it's Nora from The Club. You stepped away with {count} in your cart, {total} with free delivery tonight.",
+    "Reply YES and I'll send it, or tell me what you'd like to change."
+  ],
+  "confirmed": [
+    "Done. Order {order} is confirmed.",
+    "{driver} is on his way and should be with you around {eta}. He'll check your ID at the door."
+  ],
+  "other": [
+    "No problem. Reply YES whenever you're ready, or open the shop and I'll help you change it."
+  ],
+  "after": [
+    "Your order's on its way. Reply here anytime if you need anything."
+  ],
+  "yes_words": ["yes", "y", "yep", "yeah", "yup", "sure", "ok", "okay", "send it", "do it", "go ahead", "confirm"],
+  "order": "CL-20512",
+  "driver": "Marco",
+  "eta": "7:40 PM"
+}
