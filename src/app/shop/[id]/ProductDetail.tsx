@@ -206,6 +206,7 @@ export function ProductDetail({ id }: { id: string }) {
               <p className="mt-2 flex items-center gap-1.5 text-[13px]">
                 <ClubSeal /> <span className="tnum font-semibold">{money(p.member_price)}</span>
                 <span className="text-[var(--color-muted)]">when you join at checkout</span>
+                <span className="font-semibold text-[var(--color-brass)]">· save {Math.round((1 - p.member_price / p.retail_price) * 100)}%</span>
               </p>
             )}
             <p className="mt-3 flex gap-2 text-[14px]">

@@ -70,6 +70,15 @@ export const unitPrice = (p: Product, qty: number) => {
 export const MEMBER = member;
 
 export const TAX_RATE = settings.tax_rate; // fixed demo rate
+/** Demo membership fees (the pitch shows real numbers; Copperstate sets them before launch). */
+export const PLANS = [
+  { name: "Monthly", perMonth: settings.membership.monthly, billed: `$${settings.membership.monthly} billed each month. Cancel anytime.` },
+  { name: "Yearly", perMonth: Math.round((settings.membership.yearly / 12) * 100) / 100, billed: `$${settings.membership.yearly} billed once a year.` },
+];
+/** How much less members pay than retail across the menu, as a whole percent (every product is the same today). */
+export const MEMBER_SAVE_PCT = Math.round(
+  (PRODUCTS.reduce((s, p) => s + (1 - p.member_price / p.retail_price), 0) / PRODUCTS.length) * 100,
+);
 export const DELIVERY_SLOTS = settings.delivery_slots as Record<"Today" | "Tomorrow", string[]>;
 export const ADDRESSES = member.addresses as { id: string; label: string; line: string; note: string }[];
 export const money = (n: number) =>

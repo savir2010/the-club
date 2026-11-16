@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, Landmark, Lock, MapPin, Repeat } from "lucide-react";
-import { ADDRESSES, DELIVERY_SLOTS, MEMBER, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
+import { ADDRESSES, DELIVERY_SLOTS, MEMBER, MEMBER_SAVE_PCT, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
 import { Monogram, NoraAvatar, Wordmark } from "@/components/brand";
 import { useSession } from "@/lib/session";
 import { useShop } from "@/components/shop/ShopState";
@@ -112,7 +112,7 @@ function GateSummary({ joined = false }: { joined?: boolean }) {
             <dd className="num text-[30px] leading-none">{money(t.member)}</dd>
           </div>
           {t.savings > 0 && (
-            <p className="text-right text-[13px] text-[var(--color-brass)]">{joined ? `Applied · you save ${money(t.savings)}` : `You save ${money(t.savings)} by joining`}</p>
+            <p className="text-right text-[13px] text-[var(--color-brass)]">{joined ? `Applied · you save ${money(t.savings)} (${MEMBER_SAVE_PCT}%)` : `Join and save ${money(t.savings)}, ${MEMBER_SAVE_PCT}% off`}</p>
           )}
         </dl>
         <p className="mt-6 rounded-[10px] bg-[var(--color-canvas)] p-3.5 text-[13px] leading-relaxed text-[var(--color-muted)]">

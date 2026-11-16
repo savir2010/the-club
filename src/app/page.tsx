@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MessageCircle, CircleCheck, Car } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { NoraAvatar } from "@/components/brand";
-import { money } from "@/lib/data";
+import { money, PLANS } from "@/lib/data";
 import { LandingBackground, RevealOnScroll } from "@/components/LandingMotion";
 
 const STEPS = [
@@ -196,8 +196,8 @@ export default function Home() {
           </div>
           <div className="mx-auto mt-14 grid max-w-[980px] gap-5 md:grid-cols-2">
             {[
-              { name: "Monthly", note: "Billed each month. Cancel anytime.", primary: false },
-              { name: "Yearly", note: "Billed once a year.", primary: true },
+              { ...PLANS[0], primary: false },
+              { ...PLANS[1], primary: true },
             ].map((plan) => (
               <article
                 key={plan.name}
@@ -209,10 +209,10 @@ export default function Home() {
               >
                 <h3 className="display text-[30px]">{plan.name}</h3>
                 <p className="mt-6 flex items-baseline gap-2">
-                  <span className="num text-[48px] leading-none text-[var(--color-ivory)]">$__</span>
+                  <span className="num text-[48px] leading-none text-[var(--color-ivory)]">${plan.perMonth % 1 ? plan.perMonth.toFixed(2) : plan.perMonth}</span>
                   <span className="text-[var(--color-muted)]">per month</span>
                 </p>
-                <p className="mt-2 text-[14px] text-[var(--color-muted)]">{plan.note}</p>
+                <p className="mt-2 text-[14px] text-[var(--color-muted)]">{plan.billed}</p>
                 <ul className="mt-8 space-y-3 border-t border-[var(--color-hairline)] pt-6 text-[15px]">
                   {BENEFITS.map((b) => (
                     <li key={b.title} className="flex gap-3">
@@ -230,7 +230,7 @@ export default function Home() {
               </article>
             ))}
           </div>
-          <p className="mt-6 text-center text-[13px] text-[var(--color-faint)]">Fees are set by the Club before launch.</p>
+          <p className="mt-6 text-center text-[13px] text-[var(--color-faint)]">Demo pricing. Fees are set by the Club before launch.</p>
           </div>
         </section>
       </main>

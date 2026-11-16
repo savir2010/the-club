@@ -3,9 +3,13 @@
 Run on the Mac that plays Nora (Messages signed in, Full Disk Access for the terminal):
     npm run nora-sms
 
-What it reads: only messages that arrive after the bridge starts, only from the numbers in
-NORA_SMS_ALLOW, and only in one-to-one threads (group chats are skipped). Nothing else in
-Messages is read. Conversations live in memory only and are gone when the bridge stops.
+Who can text: numbers in NORA_SMS_ALLOW, plus any number a member registers when they join on
+the website (the "registered phone" that identifies them; no separate login). Every allowed
+number shops as the demo member, and shares that member's cart with the website in real time.
+
+What it reads: only messages that arrive after the bridge starts, only from allowed numbers, and
+only in one-to-one threads (group chats are skipped). Nothing else in Messages is read.
+Conversations and registrations live in memory only and are gone when the bridge stops.
 """
 import asyncio
 import json
@@ -14,7 +18,9 @@ import os
 import re
 import subprocess
 from typing import Any, AsyncIterator, Callable
+from urllib.parse import quote
 
+import cart_store
 import config
 import shop
 from imessage import CHAT_DB, SEND, _decode_body, _query
@@ -22,9 +28,10 @@ from imessage import CHAT_DB, SEND, _decode_body, _query
 log = logging.getLogger("nora.sms")
 
 ALLOW = [n.strip() for n in os.getenv("NORA_SMS_ALLOW", "").split(",") if n.strip()]
+NORA_NUMBER = os.getenv("NORA_SMS_NUMBER", "").strip()  # shown on the site: "Text Nora at ..."
 DRY_RUN = os.getenv("NORA_SMS_DRY_RUN", "") == "1"  # print replies instead of texting (for testing)
-MAX_REPLIES = int(os.getenv("NORA_SMS_MAX_REPLIES", "40"))  # per bridge run; a runaway stops here
-PUBLIC_URL = os.getenv("NORA_PUBLIC_URL", "").rstrip("/")  # optional shop URL for a tracking link
+MAX_REPLIES = int(os.getenv("NORA_SMS_MAX_REPLIES", "60"))  # per bridge run; a runaway stops here
+MAX_REGISTERED = 10
 POLL_SECONDS = 1.5
 TYPING_SECONDS = 1.0  # a short pause before each bubble so it reads like someone typing
 
@@ -36,7 +43,9 @@ TurnFn = Callable[..., AsyncIterator[str]]
 
 state: dict[str, Any] = {
     "active": False, "since_rowid": 0, "replies": 0, "orders": 0, "error": None,
-    "threads": {},  # handle -> {"history": [...], "cart": [...]}
+    "registered": [],  # phone numbers added from the website's join flow
+    "public_url": os.getenv("NORA_PUBLIC_URL", "").rstrip("/"),  # links in texts; learned from the site if unset
+    "threads": {},  # handle -> {"history": [...]}
     "outbox": [],   # dry run: what would have been texted
 }
 _task: asyncio.Task | None = None
@@ -48,10 +57,36 @@ def _digits(n: str) -> str:
     return re.sub(r"\D", "", n)[-10:]
 
 
+def _allowed_list() -> list[str]:
+    return [*ALLOW, *state["registered"]]
+
+
 def _allowed(handle: str) -> bool:
+    allow = _allowed_list()
     if "@" in handle:
-        return handle.lower() in {a.lower() for a in ALLOW}
-    return _digits(handle) in {_digits(a) for a in ALLOW if "@" not in a}
+        return handle.lower() in {a.lower() for a in allow}
+    return len(_digits(handle)) == 10 and _digits(handle) in {_digits(a) for a in allow if "@" not in a}
+
+
+def register(phone: str) -> dict:
+    """A member gave this number when joining: let it text Nora as them."""
+    d = _digits(phone)
+    if len(d) != 10:
+        raise ValueError("Enter a 10-digit US mobile number.")
+    if d not in {_digits(a) for a in _allowed_list() if "@" not in a}:
+        if len(state["registered"]) >= MAX_REGISTERED:
+            state["registered"].pop(0)
+        state["registered"].append(f"+1{d}")
+        log.warning("registered %s to text Nora", f"+1{d}")
+    return status()
+
+
+def learn_public_url(origin: str) -> None:
+    """The site tells us the address people reach it at, so links in texts open on a phone."""
+    origin = origin.rstrip("/")
+    if os.getenv("NORA_PUBLIC_URL") or not origin.startswith("https://"):
+        return
+    state["public_url"] = origin
 
 
 def _send(handle: str, text: str) -> None:
@@ -81,7 +116,7 @@ def _latest_rowid() -> int:
 def _new_messages() -> list[tuple[str, str]]:
     """(handle, text) for new incoming one-to-one messages from allowed senders only."""
     clauses, args = [], [state["since_rowid"]]
-    for a in ALLOW:
+    for a in _allowed_list():
         if "@" in a:
             clauses.append("h.id = ? COLLATE NOCASE")
             args.append(a)
@@ -89,6 +124,7 @@ def _new_messages() -> list[tuple[str, str]]:
             clauses.append("h.id LIKE ?")
             args.append(f"%{_digits(a)}")
     if not clauses:
+        state["since_rowid"] = _latest_rowid()  # nobody to listen to yet; never look back later
         return []
     rows = _query(
         f"""SELECT m.ROWID, m.text, m.attributedBody, h.id FROM message m
@@ -107,46 +143,17 @@ def _new_messages() -> list[tuple[str, str]]:
     return out
 
 
-def _picks_text(picks: list[dict]) -> str:
-    lines = []
+def _picks_bubbles(picks: list[dict]) -> list[str]:
+    """A numbered list, then (when the shop has a public address) one link per pick, alone in its
+    own bubble so iMessage turns it into a preview card with the photo."""
+    lines, links = [], []
     for i, pk in enumerate(picks, 1):
         p = shop.BY_ID.get(pk["id"])
         if p:
             lines.append(f"{i}. {p['name']} ({p['format']}), ${p['member_price']:.2f}. {pk['reason'].strip()}")
-    return "\n".join(lines)
-
-
-def _apply_cart(cart: list[dict], e: dict) -> None:
-    line = next((l for l in cart if l["id"] == e["id"]), None)
-    if e["op"] == "add":
-        if line:
-            line["qty"] += e["qty"]
-        else:
-            cart.append({"id": e["id"], "qty": e["qty"]})
-    elif e["op"] == "remove" and line:
-        cart.remove(line)
-    elif e["op"] == "set" and line:
-        line["qty"] = e["qty"]
-
-
-def _confirmation(cart: list[dict], plan: dict) -> tuple[str, str]:
-    view = shop.cart_view(cart)
-    total = shop.money(view["subtotal"] * (1 + SETTINGS["tax_rate"]))
-    order = f"CL-{20512 + state['orders']}"
-    state["orders"] += 1
-    day = plan.get("day") or "Today"
-    window = plan.get("window") or SETTINGS["delivery_slots"][day][-1]
-    where = ADDRESSES.get(plan.get("address") or "home", ADDRESSES["home"])
-    n = view["item_count"]
-    first = (
-        f"Order {order} is placed: {n} item{'s' if n != 1 else ''}, ${total:.2f} with tax, free delivery. "
-        f"Arriving {day.lower()} {window} at {where['label'].lower()}, {where['line'].split(',')[0]}."
-    )
-    second = f"{SCRIPT['driver']} will bring it and check your ID at the door."
-    if PUBLIC_URL:
-        from urllib.parse import quote
-        second += f" Track it here: {PUBLIC_URL}/orders/{order}?window={quote(f'{day} {window}')}&to={quote(where['label'])}"
-    return first, second
+            if state["public_url"]:
+                links.append(f"{state['public_url']}/shop/{p['id']}")
+    return ["\n".join(lines), *links]
 
 
 def _trimmed(history: list[dict], keep: int = 240) -> list[dict]:
@@ -160,6 +167,32 @@ def _trimmed(history: list[dict], keep: int = 240) -> list[dict]:
     return []
 
 
+def _place_order(plan: dict) -> list[str]:
+    cart = cart_store.lines()
+    view = shop.cart_view(cart)
+    total = shop.money(view["subtotal"] * (1 + SETTINGS["tax_rate"]))
+    oid = f"CL-{20512 + state['orders']}"
+    state["orders"] += 1
+    day = plan.get("day") or "Today"
+    window = plan.get("window") or SETTINGS["delivery_slots"][day][-1]
+    where = ADDRESSES.get(plan.get("address") or "home", ADDRESSES["home"])
+    n = view["item_count"]
+    path = f"/orders/{oid}?window={quote(f'{day} {window}')}&to={quote(where['label'])}"
+    cart_store.order_placed(
+        {"id": oid, "items": n, "total": total, "day": day, "window": window, "to": where["label"], "path": path},
+        source="sms",
+    )
+    first = (
+        f"Order {oid} is placed: {n} item{'s' if n != 1 else ''}, ${total:.2f} with tax, free delivery. "
+        f"Arriving {day.lower()} {window} at {where['label'].lower()}, {where['line'].split(',')[0]}."
+    )
+    second = f"{SCRIPT['driver']} will bring it and check your ID at the door."
+    out = [first, second]
+    if state["public_url"]:
+        out.append(f"{state['public_url']}{path}")
+    return out
+
+
 class _Connected:
     """run_turn checks for a dropped browser; a text thread never drops."""
     async def is_disconnected(self) -> bool:
@@ -169,10 +202,10 @@ class _Connected:
 async def _reply(handle: str, text: str) -> None:
     from main import ChatRequest  # imported here: main imports this module
 
-    thread = state["threads"].setdefault(handle, {"history": [], "cart": []})
+    thread = state["threads"].setdefault(handle, {"history": []})
     req = ChatRequest(
         history=_trimmed(thread["history"]),
-        message=text[:2000], channel="phone", cart=thread["cart"], account="member",
+        message=text[:2000], channel="phone", cart=cart_store.lines(), account="member",
     )
     buf: list[str] = []
     picks: list[dict] = []  # sent right after Nora's next line, so the list follows her intro
@@ -184,7 +217,8 @@ async def _reply(handle: str, text: str) -> None:
         if chunk:
             await _say(handle, chunk)
         if picks and (chunk or final):
-            await _say(handle, _picks_text(picks))
+            for b in _picks_bubbles(picks):
+                await _say(handle, b)
             picks.clear()
 
     async for raw in _turn(req, _Connected()):
@@ -198,7 +232,7 @@ async def _reply(handle: str, text: str) -> None:
             await flush()
             picks[:] = e["picks"]
         elif t == "cart":
-            _apply_cart(thread["cart"], e)
+            cart_store.apply(e["op"], e["id"], e.get("qty", 0), source="sms")  # the website sees it within a second
         elif t == "checkout" and e.get("pay"):
             order_plan = e
         elif t == "error":
@@ -207,10 +241,9 @@ async def _reply(handle: str, text: str) -> None:
         elif t == "done":
             await flush(final=True)
             thread["history"].extend(e["messages"])
-    if order_plan and thread["cart"]:
-        for line in _confirmation(thread["cart"], order_plan):
+    if order_plan and cart_store.lines():
+        for line in _place_order(order_plan):
             await _say(handle, line)
-        thread["cart"].clear()
 
 
 async def _handle(handle: str, texts: list[str]) -> None:
@@ -254,8 +287,6 @@ async def _loop() -> None:
 def start(turn: TurnFn) -> dict:
     """Begin listening. Only messages newer than this moment are ever read."""
     global _task, _turn, _inbox
-    if not ALLOW:
-        raise RuntimeError("Set NORA_SMS_ALLOW in .env.local to the number(s) that may text Nora, e.g. +14085550123.")
     stop()
     _turn = turn
     _inbox = asyncio.Queue()
@@ -282,10 +313,13 @@ def stop() -> None:
 
 
 def reset() -> dict:
-    """Forget every conversation and cart (between rehearsals)."""
+    """Forget every conversation, registration and the cart (between rehearsals)."""
     state["threads"].clear()
+    state["registered"].clear()
     state["replies"] = 0
+    state["orders"] = 0  # every rehearsal starts at the same order number
     state["outbox"] = []
+    cart_store.reset()
     return status()
 
 
@@ -294,13 +328,16 @@ def inject(handle: str, text: str) -> None:
     if not DRY_RUN:
         raise RuntimeError("inject works only with NORA_SMS_DRY_RUN=1")
     if not _allowed(handle):
-        raise RuntimeError(f"{handle} is not in NORA_SMS_ALLOW")
+        raise RuntimeError(f"{handle} is not allowed to text Nora (not in NORA_SMS_ALLOW or registered)")
+    if not state["active"]:
+        raise RuntimeError("The bridge isn't running.")
     _inbox.put_nowait((handle, text))
 
 
 def status() -> dict:
     return {
-        "active": state["active"], "dry_run": DRY_RUN, "allow": ALLOW, "replies": state["replies"],
-        "max_replies": MAX_REPLIES, "threads": len(state["threads"]), "orders": state["orders"],
-        "error": state["error"], **({"outbox": state["outbox"]} if DRY_RUN else {}),
+        "active": state["active"], "dry_run": DRY_RUN, "nora_number": NORA_NUMBER,
+        "allow": ALLOW, "registered": state["registered"], "public_url": state["public_url"],
+        "replies": state["replies"], "max_replies": MAX_REPLIES, "threads": len(state["threads"]),
+        "orders": state["orders"], "error": state["error"], **({"outbox": state["outbox"]} if DRY_RUN else {}),
     }

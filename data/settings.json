@@ -11,5 +11,10 @@
       "2:00–3:00 PM",
       "6:00–7:00 PM"
     ]
+  },
+  "membership": {
+    "_note": "Demo fees for the pitch; set by Copperstate before launch.",
+    "monthly": 12,
+    "yearly": 99
   }
 }

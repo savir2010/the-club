@@ -37,6 +37,9 @@ await p.getByText("Book a telehealth visit").click(); await p.waitForTimeout(300
 await shot("08-gate-telehealth");
 await p.getByRole("button", { name: "Request visit" }).click(); await p.waitForTimeout(300);
 await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(300);
+await p.getByText("Eligible to purchase").waitFor({ timeout: 10000 }); await p.waitForTimeout(300);
+await shot("08b-gate-state-check");
+await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(300);
 await p.getByRole("button", { name: "Chase" }).click(); await p.waitForTimeout(300);
 await p.getByRole("button", { name: "Continue to Chase" }).click();
 await p.getByRole("button", { name: "Verify" }).waitFor(); await p.getByRole("button", { name: "Verify" }).click(); await p.waitForTimeout(300);

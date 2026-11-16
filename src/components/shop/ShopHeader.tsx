@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, LayoutGrid, MapPin, Search, ShoppingBag, UserRound } from "lucide-react";
-import { CATEGORIES, MEMBER, PERSONA } from "@/lib/data";
+import { CATEGORIES, MEMBER, MEMBER_SAVE_PCT, PERSONA } from "@/lib/data";
 import { useSession } from "@/lib/session";
 import { NoraAvatar, Wordmark } from "@/components/brand";
 import { totals } from "@/components/cart";
@@ -256,11 +256,11 @@ function Header() {
           <span className="ml-auto flex shrink-0 items-center gap-3 pl-4">
             {member ? (
               <span className="hidden items-center gap-2 text-[13px] text-[var(--color-muted)] md:flex">
-                <ClubSeal /> Member prices on
+                <ClubSeal /> Member prices on · you save {MEMBER_SAVE_PCT}%
               </span>
             ) : (
               <span className="hidden items-center gap-2 text-[13px] text-[var(--color-muted)] md:flex">
-                <ClubSeal /> Members save on every item · join at checkout
+                <ClubSeal /> Members save {MEMBER_SAVE_PCT}% on every item · join at checkout
               </span>
             )}
             {path.startsWith("/shop") ? (

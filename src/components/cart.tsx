@@ -1,7 +1,7 @@
 "use client";
 
 import { Minus, Plus, X } from "lucide-react";
-import { bundleFor, byId, money, unitPrice, type Product } from "@/lib/data";
+import { bundleFor, byId, MEMBER_SAVE_PCT, money, unitPrice, type Product } from "@/lib/data";
 import { ProductArt } from "./ProductArt";
 import { useSession } from "@/lib/session";
 
@@ -177,7 +177,7 @@ export function CartSummary({ lines }: { lines: Line[] }) {
         <dd className="tnum text-[var(--color-muted)] line-through">{money(t.retail)}</dd>
       </div>
       <div className="flex justify-between">
-        <dt className="text-[var(--color-muted)]">Member savings</dt>
+        <dt className="text-[var(--color-muted)]">Member savings ({MEMBER_SAVE_PCT}%)</dt>
         <dd className="tnum text-[var(--color-brass)]">−{money(t.savings)}</dd>
       </div>
       <div className="flex justify-between">

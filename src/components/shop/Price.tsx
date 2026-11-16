@@ -44,6 +44,7 @@ export function ProductPrice({ p, size = 26, detail = false }: { p: Product; siz
           <ClubSeal />
           <span>
             List <span className="tnum line-through">{money(p.retail_price)}</span>
+            {!detail && <span className="text-[var(--color-brass)]"> · save {off}%</span>}
           </span>
         </p>
       </div>
@@ -56,6 +57,7 @@ export function ProductPrice({ p, size = 26, detail = false }: { p: Product; siz
         <span>
           <span className="tnum font-semibold text-[var(--color-ivory)]">{money(p.member_price)}</span>
           <span className="text-[var(--color-muted)]"> with membership</span>
+          <span className="font-semibold text-[var(--color-brass)]"> · save {off}%</span>
         </span>
       </p>
     </div>

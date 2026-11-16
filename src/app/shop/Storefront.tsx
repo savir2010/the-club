@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { CATEGORIES, MEMBER, PERSONA, PRODUCTS, type Product } from "@/lib/data";
+import { CATEGORIES, MEMBER, MEMBER_SAVE_PCT, PERSONA, PRODUCTS, type Product } from "@/lib/data";
 import { useSession } from "@/lib/session";
 import { NoraAvatar } from "@/components/brand";
 import { ProductArt } from "@/components/ProductArt";
@@ -57,7 +57,7 @@ export function Storefront() {
         <div className="grid items-center gap-10 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:px-14">
           <div>
             <p className="flex items-center gap-2 text-[13px] text-[#cbbfa9]">
-              <ClubSeal /> {member ? "Member prices are on" : "Open to browse · members check out"}
+              <ClubSeal /> {member ? `Member prices are on · you save ${MEMBER_SAVE_PCT}%` : `Open to browse · members save ${MEMBER_SAVE_PCT}%`}
             </p>
             <h1 className="display mt-5 max-w-[15ch] text-[40px] leading-[1.02] tracking-[-0.04em] sm:text-[56px]">
               {member ? `Welcome back, ${MEMBER.first}.` : "Tonight’s shelf, at your door by eight."}
@@ -65,7 +65,7 @@ export function Storefront() {
             <p className="mt-5 max-w-[46ch] text-[16px] leading-relaxed text-[#d8cdb9]">
               {member
                 ? `Every price below is your member price. ${PERSONA.name} remembers what you like and can reorder in one message.`
-                : "Browse the full Sol Flower menu and fill your cart. Join at checkout and every price drops to the member price."}
+                : `Browse the full Sol Flower menu and fill your cart. Join at checkout and every price drops ${MEMBER_SAVE_PCT}%, with free delivery.`}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <button onClick={() => setChatOpen(true)} className="btn btn-lg rounded-full bg-[#cfa96c] pr-6 pl-2 text-[#17130f] hover:bg-[#ddb97f]">

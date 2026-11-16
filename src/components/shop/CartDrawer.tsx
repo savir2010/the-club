@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, X } from "lucide-react";
 import { CartLine, CartSummary, totals } from "@/components/cart";
-import { money } from "@/lib/data";
+import { MEMBER_SAVE_PCT, money } from "@/lib/data";
 import { useSession } from "@/lib/session";
 import { Monogram } from "@/components/brand";
 import { useShop } from "./ShopState";
@@ -71,10 +71,10 @@ export function CartDrawer() {
             <div className="mb-5 flex gap-3.5 rounded-[14px] border border-[var(--color-brass)]/35 bg-[var(--color-brass)]/[0.07] p-4">
               <Monogram size={34} />
               <div className="min-w-0 text-[14px]">
-                <p className="font-semibold">Join to unlock member pricing</p>
+                <p className="font-semibold">Members save {MEMBER_SAVE_PCT}% on this cart</p>
                 <p className="mt-0.5 leading-snug text-[var(--color-muted)]">
-                  Members pay <span className="tnum font-semibold text-[var(--color-ivory)]">{money(t.member)}</span> for this cart and save{" "}
-                  <span className="tnum text-[var(--color-brass)]">{money(t.savings)}</span>. You&rsquo;ll join in a few steps at checkout.
+                  Members would pay only <span className="tnum font-semibold text-[var(--color-ivory)]">{money(t.member)}</span> instead of{" "}
+                  <span className="tnum">{money(t.retail)}</span>, saving <span className="tnum text-[var(--color-brass)]">{money(t.savings)}</span>. You&rsquo;ll join in a few steps at checkout.
                 </p>
               </div>
             </div>

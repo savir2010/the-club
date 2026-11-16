@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 import config
 import imessage
 import shop
+import cart_store
 import sms_bridge
 import edge_tts
 
@@ -33,7 +34,8 @@ async def lifespan(_app: FastAPI):
         try:
             s = sms_bridge.start(run_turn)
             mode = "DRY RUN (printing, not texting)" if s["dry_run"] else "live"
-            log.warning("Nora is listening for texts from %s [%s]", ", ".join(s["allow"]), mode)
+            who = ", ".join(s["allow"]) or "numbers registered on the website"
+            log.warning("Nora is listening for texts from %s [%s]", who, mode)
         except Exception as e:
             log.error("SMS bridge did not start: %s", e)
     yield
@@ -245,6 +247,47 @@ async def sms_stop():
 async def sms_reset():
     """Forget every text conversation and cart (between rehearsals)."""
     return sms_bridge.reset()
+
+
+class SmsRegister(BaseModel):
+    phone: str = Field(min_length=7, max_length=30)
+
+
+@app.post("/sms/register")
+async def sms_register(req: SmsRegister):
+    """The join flow registers the member's mobile so they can text Nora (no separate login)."""
+    try:
+        s = sms_bridge.register(req.phone)
+        return {"ok": True, "nora_number": s["nora_number"], "texting": s["active"]}
+    except ValueError as e:
+        return JSONResponse({"message": str(e)}, status_code=400)
+
+
+@app.get("/sms/info")
+async def sms_info():
+    """What the website shows: whether texting is live, and Nora's number."""
+    s = sms_bridge.status()
+    return {"texting": s["active"], "nora_number": s["nora_number"]}
+
+
+class CartPut(BaseModel):
+    lines: list[CartLine] = Field(default_factory=list, max_length=60)
+
+
+@app.get("/cart")
+async def cart_get(request: Request, since: int = 0):
+    """The member's shared cart. The site polls this so changes made by text appear right away."""
+    origin = request.headers.get("x-club-origin")
+    if origin:
+        sms_bridge.learn_public_url(origin)
+    return cart_store.since(since)
+
+
+@app.put("/cart")
+async def cart_put(req: CartPut):
+    """The site's own changes (adds, quantity, Nora in the web chat)."""
+    v = cart_store.replace([l.model_dump() for l in req.lines], source="web")
+    return {"v": v}
 
 
 class SmsInject(BaseModel):
