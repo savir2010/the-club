@@ -21,5 +21,19 @@
     "_note": "Mix and match: any `size` items in one order take `pct` percent off the member subtotal. Replaces the old per-brand bundles.",
     "size": 3,
     "pct": 15
+  },
+  "subscribe": {
+    "_note": "Subscribe & Save (replaces the monthly box): each item repeats on its own schedule. pct off every subscribed delivery; pct_multi once a member has multi_at or more subscriptions.",
+    "pct": 5,
+    "pct_multi": 10,
+    "multi_at": 3,
+    "weeks": [
+      1,
+      2,
+      4,
+      6,
+      8
+    ],
+    "default_weeks": 4
   }
 }

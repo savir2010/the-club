@@ -15,7 +15,7 @@ export function SignedInOnly({ children }: { children: ReactNode }) {
     <main className="container-club grid min-h-[60vh] place-items-center py-24 text-center">
       <div className="max-w-[420px]">
         <h1 className="display text-[36px]">Sign in to see your account</h1>
-        <p className="mt-3 text-[var(--color-muted)]">Orders, your monthly box and delivery addresses live here.</p>
+        <p className="mt-3 text-[var(--color-muted)]">Orders, your subscriptions and delivery addresses live here.</p>
         <div className="mt-8 flex justify-center gap-3">
           <Link href={`/signin?next=${encodeURIComponent(path)}`} className="btn btn-primary rounded-full px-7">Sign in</Link>
           <Link href="/shop" className="btn btn-outline rounded-full px-7">Keep shopping</Link>

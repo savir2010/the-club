@@ -26,7 +26,7 @@ const STEPS = [
 const BENEFITS = [
   { title: "Member pricing on every item", body: "Every product, every order, at the member price." },
   { title: "Free delivery", body: "No delivery fee on any order. Tip your driver if you like." },
-  { title: "A monthly box you can change anytime", body: "Edit, skip a month or pause from your account." },
+  { title: "Subscribe & Save on your staples", body: "Put favorites on repeat, every 1 to 8 weeks, for up to 10% more off. Skip or cancel anytime." },
   { title: "A concierge who knows your taste", body: "Nora remembers what you like and reorders in one message." },
 ];
 
