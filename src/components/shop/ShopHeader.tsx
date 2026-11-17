@@ -107,7 +107,7 @@ function AccountMenu() {
                 {[
                   ["Your account", "/account"],
                   ["Your orders", "/account#orders"],
-                  ["Monthly box", "/account/subscriptions"],
+                  ["Subscribe & Save", "/account/subscriptions"],
                 ].map(([label, href]) => (
                   <li key={href}>
                     <Link href={href} onClick={() => setOpen(false)} className="block rounded-[8px] px-2 py-2 hover:bg-[var(--color-raised-2)]">
@@ -251,7 +251,7 @@ function Header() {
               {c.name}
             </Link>
           ))}
-          <Link href="/account/subscriptions" className="bar-link shrink-0 px-2.5 py-1.5">Monthly box</Link>
+          <Link href="/account/subscriptions" className="bar-link shrink-0 px-2.5 py-1.5">Subscribe &amp; Save</Link>
 
           <span className="ml-auto flex shrink-0 items-center gap-3 pl-4">
             {member ? (

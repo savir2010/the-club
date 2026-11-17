@@ -18,7 +18,7 @@ export function SiteHeader({ variant = "public" }: { variant?: "public" | "membe
               href="/account/subscriptions"
               className="hidden rounded-md px-3 py-2 text-[var(--color-muted)] hover:text-[var(--color-ivory)] sm:inline"
             >
-              Monthly box
+              Subscribe &amp; Save
             </Link>
             <Link href="/account" className="rounded-md px-3 py-2 text-[var(--color-muted)] hover:text-[var(--color-ivory)]">
               Account

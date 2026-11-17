@@ -208,11 +208,14 @@ export function LinePrice({ p, qty, size = 18 }: { p: Product; qty: number; size
  * line with its percentage (member price, then the Box). Before the box is full, the Box line shows
  * what one more item would unlock. `pitch` is the guest version: what joining would save.
  */
-export function SavingsBreakdown({ lines, pitch = false, className = "" }: { lines: Line[]; pitch?: boolean; className?: string }) {
+export function SavingsBreakdown({
+  lines, pitch = false, className = "", subscribe,
+}: { lines: Line[]; pitch?: boolean; className?: string; subscribe?: { pct: number; amount: number } }) {
   const t = totals(lines);
   if (!t.count) return null;
   const memberOff = t.retail - t.base;
-  const pctOff = Math.round((t.savings / t.retail) * 100);
+  const saved = t.savings + (subscribe?.amount ?? 0);
+  const pctOff = Math.round((saved / t.retail) * 100);
   const chip = (txt: string, on = true) => (
     <span
       className={`tnum inline-flex h-[22px] min-w-[46px] items-center justify-center rounded-full px-2 text-[12px] font-bold ${
@@ -230,7 +233,7 @@ export function SavingsBreakdown({ lines, pitch = false, className = "" }: { lin
           <p className="mt-0.5 text-[12px] text-[var(--color-muted)]">{pctOff}% off retail on this order</p>
         </div>
         <p className="num text-[34px] leading-none text-[var(--color-brass)]" data-savings-total>
-          {money(t.savings)}
+          {money(saved)}
         </p>
       </div>
       <dl className="mt-3.5 space-y-2 border-t border-[var(--color-brass)]/20 pt-3 text-[14px]">
@@ -247,6 +250,12 @@ export function SavingsBreakdown({ lines, pitch = false, className = "" }: { lin
           <div className="flex items-center justify-between gap-3 text-[var(--color-muted)]">
             <dt className="flex items-center gap-2.5">{chip(`−${BOX.pct}%`, false)} Box</dt>
             <dd className="text-[13px]">Add {t.toBox} more to unlock</dd>
+          </div>
+        )}
+        {subscribe && subscribe.amount > 0 && (
+          <div className="flex items-center justify-between gap-3" data-subscribe-line>
+            <dt className="flex items-center gap-2.5">{chip(`−${subscribe.pct}%`)} Subscribe &amp; Save</dt>
+            <dd className="tnum font-semibold text-[var(--color-brass)]">−{money(subscribe.amount)}</dd>
           </div>
         )}
       </dl>

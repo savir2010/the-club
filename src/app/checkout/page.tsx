@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, Landmark, Lock, MapPin, Repeat } from "lucide-react";
-import { ADDRESSES, DELIVERY_SLOTS, MEMBER, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
+import { ADDRESSES, DELIVERY_SLOTS, MEMBER, PERSONA, SUBSCRIBE, TAX_RATE, byId, everyLabel, money, subscribePct } from "@/lib/data";
+import { isoIn, longDate, useSubscriptions } from "@/lib/subscriptions";
 import { Monogram, NoraAvatar, Wordmark } from "@/components/brand";
 import { useSession } from "@/lib/session";
 import { useShop } from "@/components/shop/ShopState";
@@ -135,7 +136,13 @@ export default function Checkout() {
   const [slot, setSlot] = useState("7:00–8:00 PM");
   const [tip, setTip] = useState<number | "custom">(18);
   const [custom, setCustom] = useState("10");
-  const [monthly, setMonthly] = useState(false);
+  // Subscribe & Save: repeat these items on a schedule; ?subscribe=<weeks> comes from a product page.
+  const [subWeeks, setSubWeeks] = useState<number | null>(null);
+  const subs = useSubscriptions();
+  useEffect(() => {
+    const w = Number(new URLSearchParams(window.location.search).get("subscribe"));
+    if (SUBSCRIBE.weeks.includes(w)) setSubWeeks(w);
+  }, []);
   const [placing, setPlacing] = useState(false);
   const [address, setAddress] = useState(ADDRESSES[0].id); // last used
   const [nora, setNora] = useState<string | null>(null); // banner while Nora is checking out
@@ -221,9 +228,13 @@ export default function Checkout() {
   }, [phase]);
 
   const t = totals(lines);
-  const tipAmt = tip === "custom" ? Math.max(0, Number(custom) || 0) : Math.round(t.member * tip) / 100;
-  const tax = Math.round(t.member * TAX_RATE * 100) / 100;
-  const total = t.member + tax + tipAmt;
+  // the rate after subscribing to this order's items (the higher rate once there are SUBSCRIBE.multi_at or more)
+  const subPct = subscribePct(new Set([...subs.subs.map((s) => s.id), ...lines.map((l) => l.id)]).size);
+  const subSave = subWeeks ? Math.round(t.member * subPct) / 100 : 0;
+  const due = t.member - subSave;
+  const tipAmt = tip === "custom" ? Math.max(0, Number(custom) || 0) : Math.round(due * tip) / 100;
+  const tax = Math.round(due * TAX_RATE * 100) / 100;
+  const total = due + tax + tipAmt;
 
   return (
     <div className="min-h-dvh">
@@ -417,27 +428,50 @@ export default function Checkout() {
               </ul>
             </Section>
 
-            <section className="border-t border-[var(--color-hairline)] pt-8">
+            <section className="border-t border-[var(--color-hairline)] pt-8" data-subscribe-save>
               <label className="flex cursor-pointer items-start justify-between gap-6">
                 <span className="flex gap-3">
                   <Repeat size={18} strokeWidth={1.4} className="mt-1 shrink-0 text-[var(--color-brass)]" aria-hidden />
                   <span>
-                    <span className="display block text-[24px] leading-tight">Make this monthly</span>
+                    <span className="display block text-[24px] leading-tight">
+                      Subscribe &amp; Save <span className="text-[var(--color-brass)]">{subPct}%</span>
+                    </span>
                     <span className="mt-1 block text-[14px] text-[var(--color-muted)]">
-                      The same box arrives every month. Edit, skip or pause anytime.
+                      Get these items on repeat and save {subPct}% today and on every delivery. Skip or cancel anytime.
                     </span>
                   </span>
                 </span>
-                <input type="checkbox" role="switch" className="peer sr-only" checked={monthly} onChange={(e) => setMonthly(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  role="switch"
+                  className="peer sr-only"
+                  checked={subWeeks !== null}
+                  onChange={(e) => setSubWeeks(e.target.checked ? SUBSCRIBE.default_weeks : null)}
+                />
                 <span
                   className="relative mt-1 h-7 w-12 shrink-0 rounded-full border border-[var(--color-hairline-strong)] transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] after:absolute after:top-[3px] after:left-[3px] after:size-5 after:rounded-full after:bg-[var(--color-muted)] after:transition-all after:duration-200 peer-checked:after:left-[23px] peer-checked:after:bg-[var(--color-ink)]"
                   aria-hidden
                 />
               </label>
-              {monthly && (
-                <p className="mt-3 ml-8 animate-[fade-up_240ms_var(--ease-out)_both] text-[14px] text-[var(--color-ivory)]/85">
-                  Next box: <span className="tnum">December 7, 2026</span>. You&rsquo;ll get a text two days before.
-                </p>
+              {subWeeks !== null && (
+                <div className="mt-4 ml-8 animate-[fade-up_240ms_var(--ease-out)_both]">
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Delivery frequency">
+                    {SUBSCRIBE.weeks.map((w) => (
+                      <button
+                        key={w}
+                        role="radio"
+                        aria-checked={subWeeks === w}
+                        onClick={() => setSubWeeks(w)}
+                        className={`h-9 rounded-full border px-3.5 text-[13px] transition-colors ${subWeeks === w ? "border-[var(--color-brass)] bg-[var(--color-brass)]/12 text-[var(--color-ivory)]" : "border-[var(--color-hairline-strong)] text-[var(--color-muted)] hover:border-[var(--color-ivory)]/40"}`}
+                      >
+                        {everyLabel(w)}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-[14px] text-[var(--color-ivory)]/85">
+                    Today&rsquo;s order is the first delivery. Next: <span className="tnum">{longDate(isoIn(subWeeks * 7))}</span>. You&rsquo;ll get a text two days before.
+                  </p>
+                </div>
               )}
             </section>
               </div>
@@ -461,7 +495,7 @@ export default function Checkout() {
                   <dd>Free</dd>
                 </div>
               </dl>
-              <SavingsBreakdown lines={lines} className="mt-4" />
+              <SavingsBreakdown lines={lines} className="mt-4" subscribe={subSave ? { pct: subPct, amount: subSave } : undefined} />
 
               <fieldset className="mt-6 border-t border-[var(--color-hairline)] pt-5">
                 <legend className="flex w-full items-baseline justify-between text-[15px]">
@@ -507,6 +541,7 @@ export default function Checkout() {
                 disabled={placing || lines.length === 0}
                 onClick={() => {
                   setPlacing(true);
+                  if (subWeeks) subs.add(lines.map((l) => ({ id: l.id, qty: l.qty })), subWeeks, isoIn(subWeeks * 7));
                   const where = ADDRESSES.find((a) => a.id === address)?.label ?? "";
                   setTimeout(() => router.push(`/orders/CL-20512?tip=${tipAmt.toFixed(2)}&window=${encodeURIComponent(`${day} ${slot}`)}&to=${encodeURIComponent(where)}`), 700);
                 }}

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, IdCard, MapPin, MessageCircle, Repeat, Truck } from "lucide-react";
+import { Check, ChevronRight, IdCard, MapPin, MessageCircle, Repeat, Truck } from "lucide-react";
 import { BoxMeter } from "@/components/cart";
-import { MEMBER, PERSONA, PRODUCTS, byId, money, type Product } from "@/lib/data";
+import { MEMBER, PERSONA, PRODUCTS, SUBSCRIBE, byId, everyLabel, money, subscribePrice, type Product } from "@/lib/data";
+import { arrives, isoIn, longDate, useSubscriptions } from "@/lib/subscriptions";
 import { ProductArt } from "@/components/ProductArt";
 import { Aurora } from "@/components/Aurora";
 import { NoraAvatar } from "@/components/brand";
@@ -107,6 +108,132 @@ function Row({ k, v }: { k: string; v: string }) {
       <th scope="row" className="w-[38%] py-2.5 pr-4 text-left align-top text-[14px] font-medium">{k}</th>
       <td className="py-2.5 text-[14px] text-[var(--color-ivory)]/85">{v}</td>
     </tr>
+  );
+}
+
+/** Amazon-style purchase options: buy once, or Subscribe & Save on a repeat schedule. */
+function BuyOptions({
+  p, qty, setQty, member, onAdd, onBuyNow,
+}: {
+  p: Product; qty: number; setQty: (n: number) => void; member: boolean; onAdd: () => void; onBuyNow: (subscribeWeeks?: number) => void;
+}) {
+  const subs = useSubscriptions();
+  const current = subs.find(p.id);
+  const [mode, setMode] = useState<"once" | "subscribe">("once");
+  const [weeks, setWeeks] = useState(current?.weeks ?? SUBSCRIBE.default_weeks);
+  const [done, setDone] = useState(false);
+  // the rate counting this item, so a third subscription shows the higher rate it unlocks
+  const pct = subs.pct === SUBSCRIBE.pct_multi || (!current && subs.subs.length + 1 >= SUBSCRIBE.multi_at) ? SUBSCRIBE.pct_multi : SUBSCRIBE.pct;
+  const base = member ? p.member_price : p.retail_price;
+  const subPrice = subscribePrice(p.member_price, pct);
+  const toMulti = SUBSCRIBE.multi_at - subs.subs.length - (current ? 0 : 1);
+
+  const option = (value: "once" | "subscribe", children: React.ReactNode) => (
+    <label
+      className={`block cursor-pointer rounded-[12px] border p-3.5 transition-colors ${mode === value ? "border-[var(--color-brass)] bg-[var(--color-brass)]/[0.07]" : "border-[var(--color-hairline-strong)] hover:border-[var(--color-ivory)]/35"}`}
+    >
+      <input type="radio" name="purchase" className="peer sr-only" checked={mode === value} onChange={() => { setMode(value); setDone(false); }} />
+      <span className="flex items-start gap-3">
+        <span className={`mt-0.5 grid size-[18px] shrink-0 place-items-center rounded-full border-2 ${mode === value ? "border-[var(--color-brass)]" : "border-[var(--color-hairline-strong)]"}`} aria-hidden>
+          {mode === value && <span className="size-2 rounded-full bg-[var(--color-brass)]" />}
+        </span>
+        <span className="min-w-0 flex-1">{children}</span>
+      </span>
+    </label>
+  );
+
+  return (
+    <div className="mt-4" data-buy-options>
+      {current && (
+        <p className="mb-3 flex items-start gap-2 rounded-[10px] bg-[var(--color-sage)]/10 px-3 py-2.5 text-[13px]">
+          <Repeat size={15} strokeWidth={1.6} className="mt-px shrink-0 text-[var(--color-sage)]" aria-hidden />
+          <span>
+            You subscribe to this · {everyLabel(current.weeks).toLowerCase()} · next {longDate(arrives(current))}.{" "}
+            <Link href="/account/subscriptions" className="text-[var(--color-brass)] hover:underline">Manage</Link>
+          </span>
+        </p>
+      )}
+      <fieldset className="grid gap-2">
+        <legend className="sr-only">Purchase options</legend>
+        {option("once", (
+          <span className="flex items-baseline justify-between gap-3 text-[14px]">
+            <span className="font-medium">One-time purchase</span>
+            <span className="tnum">{money(base)}</span>
+          </span>
+        ))}
+        {option("subscribe", (
+          <>
+            <span className="flex items-baseline justify-between gap-3 text-[14px]">
+              <span className="font-medium">
+                Subscribe &amp; Save <span className="ml-1 rounded-full bg-[var(--color-brass)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-ink)]">{pct}%</span>
+              </span>
+              <span className="tnum font-semibold text-[var(--color-brass)]">{money(subPrice)}</span>
+            </span>
+            <span className="mt-1 block text-[12px] leading-snug text-[var(--color-muted)]">
+              {member ? "Member price" : "Member price when you join"}, then {pct}% off every delivery. Skip or cancel anytime.
+            </span>
+            {mode === "subscribe" && (
+              <span className="mt-3 block animate-[fade-up_200ms_var(--ease-out)_both]">
+                <span className="flex items-center gap-2 text-[13px]">
+                  Deliver
+                  <select value={weeks} onChange={(e) => { setWeeks(+e.target.value); setDone(false); }} className="field h-8 flex-1 px-2.5 text-[13px]" aria-label="Delivery frequency">
+                    {SUBSCRIBE.weeks.map((w) => <option key={w} value={w}>{everyLabel(w).toLowerCase()}</option>)}
+                  </select>
+                </span>
+                <span className="mt-2 block text-[12px] text-[var(--color-muted)]">
+                  {toMulti > 0
+                    ? `Save ${SUBSCRIBE.pct_multi}% on everything with ${SUBSCRIBE.multi_at} or more subscriptions (${toMulti} more to go).`
+                    : `You're at ${SUBSCRIBE.pct_multi}% off with ${SUBSCRIBE.multi_at}+ subscriptions.`}
+                </span>
+              </span>
+            )}
+          </>
+        ))}
+      </fieldset>
+
+      <label htmlFor="qty" className="mt-4 flex items-center gap-3 text-[14px]">
+        Quantity
+        <select id="qty" value={qty} onChange={(e) => { setQty(+e.target.value); setDone(false); }} className="field h-9 w-20 px-3 text-[14px]">
+          {Array.from({ length: 10 }, (_, i) => (
+            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
+      </label>
+
+      <div className="mt-4 grid gap-2.5">
+        {mode === "once" ? (
+          <>
+            <button className="btn btn-primary w-full rounded-full" onClick={onAdd}>Add to cart</button>
+            <button className="btn w-full rounded-full bg-[#17130f] text-[#f3ece0] hover:opacity-90" onClick={() => onBuyNow()}>Buy now</button>
+          </>
+        ) : member ? (
+          done ? (
+            <div className="rounded-[12px] border border-[var(--color-sage)]/40 bg-[var(--color-sage)]/10 p-3.5 text-[13px] animate-[fade-up_240ms_var(--ease-out)_both]" role="status">
+              <p className="flex items-center gap-2 text-[14px] font-medium"><Check size={16} className="text-[var(--color-sage)]" aria-hidden /> Subscribed</p>
+              <p className="mt-1 text-[var(--color-muted)]">
+                First delivery {longDate(isoIn(1))}, then {everyLabel(weeks).toLowerCase()}. We&rsquo;ll text you two days before each one.
+              </p>
+              <Link href="/account/subscriptions" className="mt-2 inline-block text-[var(--color-brass)] hover:underline">See your subscriptions</Link>
+            </div>
+          ) : (
+            <button
+              className="btn btn-primary w-full rounded-full"
+              data-subscribe-now
+              onClick={() => {
+                subs.add([{ id: p.id, qty }], weeks, isoIn(1));
+                setDone(true);
+              }}
+            >
+              <Repeat size={16} aria-hidden /> {current ? "Update subscription" : "Subscribe now"}
+            </button>
+          )
+        ) : (
+          <button className="btn btn-primary w-full rounded-full" onClick={() => onBuyNow(weeks)}>
+            Join and subscribe
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -216,28 +343,10 @@ export function ProductDetail({ id }: { id: string }) {
             {inCart > 0 && <p className="mt-1 text-[13px] text-[var(--color-muted)]">{inCart} already in your cart</p>}
 
             {p.in_stock ? (
-              <>
-                <label htmlFor="qty" className="mt-4 flex items-center gap-3 text-[14px]">
-                  Quantity
-                  <select id="qty" value={qty} onChange={(e) => setQty(+e.target.value)} className="field h-9 w-20 px-3 text-[14px]">
-                    {Array.from({ length: 10 }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>{i + 1}</option>
-                    ))}
-                  </select>
-                </label>
-                <div className="mt-4 grid gap-2.5">
-                  <button className="btn btn-primary w-full rounded-full" onClick={() => add(p.id, qty)}>Add to cart</button>
-                  <button
-                    className="btn w-full rounded-full bg-[#17130f] text-[#f3ece0] hover:opacity-90"
-                    onClick={() => {
-                      add(p.id, qty);
-                      router.push("/checkout");
-                    }}
-                  >
-                    Buy now
-                  </button>
-                </div>
-              </>
+              <BuyOptions p={p} qty={qty} setQty={setQty} member={member} onAdd={() => add(p.id, qty)} onBuyNow={(subscribeWeeks) => {
+                add(p.id, qty);
+                router.push(subscribeWeeks ? `/checkout?subscribe=${subscribeWeeks}` : "/checkout");
+              }} />
             ) : (
               <button className="btn btn-outline mt-4 w-full" onClick={() => setChatOpen(true)}>Ask {PERSONA.name} for something similar</button>
             )}
@@ -251,9 +360,6 @@ export function ProductDetail({ id }: { id: string }) {
               <IdCard size={17} strokeWidth={1.5} className="mt-px shrink-0" aria-hidden />
               Your driver checks ID at the door.
             </p>
-            <button className="mt-3 inline-flex items-center gap-2 text-[13px] text-[var(--color-ivory)] hover:text-[var(--color-brass)]">
-              <Repeat size={15} strokeWidth={1.5} aria-hidden /> Add to monthly box
-            </button>
           </div>
 
           <button

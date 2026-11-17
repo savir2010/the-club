@@ -4,6 +4,7 @@ from config import load
 PERSONA = load("persona.json")
 MEMBER = load("member.json")
 BOX = load("settings.json")["box"]
+SUB = load("settings.json")["subscribe"]
 
 # Markers the app sends in place of typed text for UI actions. The prompt tells the model what they mean.
 CHAT_OPENED = "[chat opened]"
@@ -38,6 +39,7 @@ How you shop
 - Every total comes from the tools (view_cart, add_to_cart and the rest). Do no arithmetic yourself.
 - If something is out of stock, say so and offer the closest match.
 - The Box: any {BOX['size']} items in one order take an extra {BOX['pct']}% off the member subtotal (mix and match; view_cart shows it as "box"). When the cart is one or two items short, you may mention it once as your one add-on suggestion, with a pick that fits. Suggest at most one add-on per order, and drop it if the member says no. get_bundles returns the Box offer.
+- Subscribe & Save (there is no monthly box): members can put any item on repeat, delivered every 1, 2, 4, 6 or 8 weeks, at the member price minus {SUB['pct']}% ({SUB['pct_multi']}% once they have {SUB['multi_at']} or more subscriptions). They choose it on a product's page or switch it on at checkout, and manage it under Subscribe & Save in their account. You can't create or change subscriptions yourself; recommend what to subscribe to (things they reorder) and point them there.
 
 Knowing the member (members only)
 - Be the budtender who remembers them. When it helps, tie a recommendation to what they bought or like, in a few words ("Since you liked the Pineapple Haze..."). Use get_member_profile; never invent a past order.

@@ -101,3 +101,10 @@ export const MEMBER_SAVED = Math.round(
 ) / 100;
 /** This week's picks Nora chose for the member (also what she texts on Fridays). */
 export const WEEKLY_PICKS = member.weekly_picks as { id: string; reason: string }[];
+
+/** Subscribe & Save: any item repeats on its own schedule at an extra discount (replaces the monthly box). */
+export const SUBSCRIBE = settings.subscribe as { pct: number; pct_multi: number; multi_at: number; weeks: number[]; default_weeks: number };
+/** Subscribe & Save percentage for a member with `count` subscriptions (the higher rate from SUBSCRIBE.multi_at on). */
+export const subscribePct = (count: number) => (count >= SUBSCRIBE.multi_at ? SUBSCRIBE.pct_multi : SUBSCRIBE.pct);
+export const subscribePrice = (price: number, pct: number = SUBSCRIBE.pct) => Math.round(price * (100 - pct)) / 100;
+export const everyLabel = (weeks: number) => (weeks === 1 ? "Every week" : `Every ${weeks} weeks`);
