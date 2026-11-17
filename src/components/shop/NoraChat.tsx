@@ -10,7 +10,6 @@ import type { NoraEvent, Pick } from "@/lib/agent/events";
 import { NoraAvatar } from "@/components/brand";
 import { ProductArt } from "@/components/ProductArt";
 import { ProductPrice } from "./Price";
-import { totals } from "@/components/cart";
 import { useShop } from "./ShopState";
 import { useSession } from "@/lib/session";
 import { bumpCart, flyToCart, press, reducedMotion, sleep } from "./motion";
@@ -96,7 +95,6 @@ export function NoraChat() {
   const end = useRef<HTMLLIElement>(null);
   const panel = useRef<HTMLElement>(null);
   const sendBtn = useRef<HTMLButtonElement>(null);
-  const t = totals(lines);
 
   // Everything said in this window comes from the agent; nothing is scripted here.
   const [msgs, setMsgs] = useState<UiMsg[]>([]);

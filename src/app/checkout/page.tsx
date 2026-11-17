@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, Landmark, Lock, MapPin, Repeat } from "lucide-react";
-import { ADDRESSES, BOX, DELIVERY_SLOTS, MEMBER, MEMBER_SAVE_PCT, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
+import { ADDRESSES, DELIVERY_SLOTS, MEMBER, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
 import { Monogram, NoraAvatar, Wordmark } from "@/components/brand";
 import { useSession } from "@/lib/session";
 import { useShop } from "@/components/shop/ShopState";

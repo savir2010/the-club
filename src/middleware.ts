@@ -22,6 +22,8 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
+  // Node.js, not Edge: Vercel services don't support Edge functions
+  runtime: "nodejs",
   // everything except Next's own static files and the favicon
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
