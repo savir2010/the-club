@@ -3,11 +3,11 @@
 // Field names match the catalog.json spec in the demo brief so the real menu can drop in.
 
 // The catalog, bundles, member and persona live in /data as JSON, shared with the Python agent.
-import catalog from "../../data/catalog.json";
-import bundles from "../../data/bundles.json";
-import member from "../../data/member.json";
-import persona from "../../data/persona.json";
-import settings from "../../data/settings.json";
+import catalog from "../../agent/data/catalog.json";
+import bundles from "../../agent/data/bundles.json";
+import member from "../../agent/data/member.json";
+import persona from "../../agent/data/persona.json";
+import settings from "../../agent/data/settings.json";
 
 export type Category =
   | "Flower"

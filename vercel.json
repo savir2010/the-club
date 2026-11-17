@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "shop": {
+      "root": ".",
+      "framework": "nextjs",
+      "bindings": [
+        { "type": "service", "service": "agent", "format": "url", "env": "NORA_AGENT_URL" }
+      ]
+    },
+    "agent": {
+      "root": "agent",
+      "framework": "fastapi",
+      "entrypoint": "main.py"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": { "service": "shop" } }
+  ]
+}
