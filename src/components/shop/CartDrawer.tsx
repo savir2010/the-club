@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, X } from "lucide-react";
-import { CartLine, CartSummary, totals } from "@/components/cart";
-import { MEMBER_SAVE_PCT, money } from "@/lib/data";
+import { BoxMeter, CartLine, CartSummary, SavingsBreakdown, totals } from "@/components/cart";
+import { money } from "@/lib/data";
 import { useSession } from "@/lib/session";
 import { Monogram } from "@/components/brand";
 import { useShop } from "./ShopState";
@@ -23,11 +23,36 @@ export function CartDrawer() {
     return () => window.removeEventListener("keydown", onKey);
   }, [cartOpen, setCartOpen]);
 
-  if (!cartOpen) return null;
+  // stay mounted for a short exit, so closing slides away instead of vanishing
+  const [shown, setShown] = useState(cartOpen);
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => {
+    if (cartOpen) {
+      setShown(true);
+      setLeaving(false);
+      return;
+    }
+    setLeaving(true);
+    const t = window.setTimeout(() => {
+      setShown(false);
+      setLeaving(false);
+    }, 200);
+    return () => window.clearTimeout(t);
+  }, [cartOpen]);
+
+  if (!shown) return null;
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Cart">
-      <button className="absolute inset-0 animate-[fade-up_180ms_var(--ease-out)_both] bg-[#2b261f]/25" onClick={() => setCartOpen(false)} aria-label="Close cart" tabIndex={-1} />
-      <aside className="absolute inset-y-0 right-0 flex w-full max-w-[420px] animate-[slide-in_260ms_var(--ease-out)_both] flex-col border-l border-[var(--color-hairline)] bg-[var(--color-raised)] shadow-[var(--shadow-float)]">
+    <div className={`fixed inset-0 z-50 ${leaving ? "pointer-events-none" : ""}`} role="dialog" aria-modal="true" aria-label="Cart" data-leaving={leaving || undefined}>
+      <button
+        className="absolute inset-0 animate-[fade-up_180ms_var(--ease-out)_both] bg-[#2b261f]/25"
+        style={leaving ? { animation: "scrim-out 200ms var(--ease-in) both" } : undefined}
+        onClick={() => setCartOpen(false)}
+        aria-label="Close cart"
+        tabIndex={-1}
+      />
+      <aside
+        style={leaving ? { animation: "drawer-out 200ms var(--ease-in) both" } : undefined}
+        className="absolute inset-y-0 right-0 flex w-full max-w-[420px] animate-[slide-in_260ms_var(--ease-out)_both] flex-col border-l border-[var(--color-hairline)] bg-[var(--color-raised)] shadow-[var(--shadow-float)]">
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <h2 className="display text-[28px]">Your cart</h2>
           <button className="icon-btn" onClick={() => setCartOpen(false)} aria-label="Close cart" autoFocus>
@@ -68,17 +93,16 @@ export function CartDrawer() {
         )}
         <div className="border-t border-[var(--color-hairline)] px-5 pt-5 pb-6">
           {!member && lines.length > 0 && (
-            <div className="mb-5 flex gap-3.5 rounded-[14px] border border-[var(--color-brass)]/35 bg-[var(--color-brass)]/[0.07] p-4">
-              <Monogram size={34} />
-              <div className="min-w-0 text-[14px]">
-                <p className="font-semibold">Members save {MEMBER_SAVE_PCT}% on this cart</p>
-                <p className="mt-0.5 leading-snug text-[var(--color-muted)]">
-                  Members would pay only <span className="tnum font-semibold text-[var(--color-ivory)]">{money(t.member)}</span> instead of{" "}
-                  <span className="tnum">{money(t.retail)}</span>, saving <span className="tnum text-[var(--color-brass)]">{money(t.savings)}</span>. You&rsquo;ll join in a few steps at checkout.
-                </p>
-              </div>
+            <div className="mb-4 flex items-center gap-3 text-[14px]">
+              <Monogram size={30} />
+              <p className="leading-snug">
+                <span className="font-semibold">Members pay <span className="tnum">{money(t.member)}</span></span>
+                <span className="text-[var(--color-muted)]"> for this cart. You&rsquo;ll join in a few steps at checkout.</span>
+              </p>
             </div>
           )}
+          {!member && <SavingsBreakdown lines={lines} pitch className="mb-5" />}
+          {lines.length > 0 && <BoxMeter lines={lines} className="mb-5" />}
           <CartSummary lines={lines} />
           <Link
             id="review-order"

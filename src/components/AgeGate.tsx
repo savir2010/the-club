@@ -69,7 +69,7 @@ export function AgeGate() {
           <Monogram size={48} />
         </div>
         <h1 id="age-title" className="display text-[30px] sm:text-[34px]">
-          Are you 21 or older, or 18 or older with an Arizona medical card?
+          Are you 21 or older?
         </h1>
         <p className="mx-auto mt-4 max-w-[34ch] text-[14px] text-[var(--color-muted)]">
           The Club is a private delivery service for adults in Arizona.

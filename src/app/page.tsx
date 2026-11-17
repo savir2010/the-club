@@ -190,8 +190,7 @@ export default function Home() {
               Membership
             </h2>
             <p className="mt-5 text-[var(--color-muted)]">
-              One fee, member pricing on everything, free delivery. Shop first and join at checkout. Members
-              without a medical card can book a telehealth visit while they join.
+              One fee, member pricing on everything, free delivery. Shop first and join at checkout.
             </p>
           </div>
           <div className="mx-auto mt-14 grid max-w-[980px] gap-5 md:grid-cols-2">

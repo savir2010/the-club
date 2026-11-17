@@ -64,7 +64,7 @@ export default function Join() {
           )}
         </main>
         <footer className="border-t border-[var(--color-hairline)] px-5 py-5 text-[13px] text-[var(--color-muted)] sm:px-10">
-          21+ or 18+ with a valid Arizona medical marijuana card. Demo only.
+          Members must be 21 or older. Demo only.
         </footer>
       </div>
     </div>

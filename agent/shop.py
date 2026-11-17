@@ -8,6 +8,7 @@ CATALOG: list[dict] = load("catalog.json")
 BUNDLES: list[dict] = load("bundles.json")
 MEMBER: dict = load("member.json")
 LIMITS: dict = load("limits.json")
+BOX: dict = load("settings.json")["box"]  # any BOX["size"] items take BOX["pct"]% off the member subtotal
 BY_ID = {p["id"]: p for p in CATALOG}
 
 
@@ -80,11 +81,17 @@ def cart_view(cart: list[Line]) -> dict:
             "bundle_applied": bool(b and line["qty"] >= b["min_qty"]), "line_total": money(each * line["qty"]),
         })
     retail = money(sum(i["retail_each"] * i["qty"] for i in items))
-    subtotal = money(sum(i["line_total"] for i in items))
+    before_box = money(sum(i["line_total"] for i in items))
+    count = sum(i["qty"] for i in items)
+    box_discount = money(before_box * BOX["pct"] / 100) if count >= BOX["size"] else 0.0
+    subtotal = money(before_box - box_discount)
     return {
         "items": items,
-        "item_count": sum(i["qty"] for i in items),
+        "item_count": count,
         "retail_value": retail,
+        "member_price_total": before_box,
+        "box": {"size": BOX["size"], "pct": BOX["pct"], "applied": box_discount > 0,
+                "discount": box_discount, "items_to_go": max(0, BOX["size"] - count)},
         "member_savings": money(retail - subtotal),
         "delivery": "Free",
         "subtotal": subtotal,
@@ -92,18 +99,14 @@ def cart_view(cart: list[Line]) -> dict:
     }
 
 
-def bundles_for(cart: list[Line]) -> list[dict]:
-    out = []
-    for b in BUNDLES:
-        eligible = [p for p in CATALOG if bundle_for(p) is b]
-        in_cart = [l for l in cart if any(p["id"] == l["id"] for p in eligible)]
-        out.append({
-            **b,
-            "eligible_products": [{"id": p["id"], "name": p["name"], "member_price": p["member_price"]} for p in eligible],
-            "already_in_cart": sum(l["qty"] for l in in_cart),
-            "applied": any(l["qty"] >= b["min_qty"] for l in in_cart),
-        })
-    return out
+def box_offer(cart: list[Line]) -> dict:
+    """The Box: mix and match any BOX["size"] items for BOX["pct"]% off. Replaces per-brand bundles."""
+    count = sum(l["qty"] for l in cart)
+    return {
+        "offer": f"Any {BOX['size']} items in one order take {BOX['pct']}% off the member subtotal. Mix and match any products.",
+        "size": BOX["size"], "pct": BOX["pct"], "items_in_cart": count,
+        "applied": count >= BOX["size"], "items_to_go": max(0, BOX["size"] - count),
+    }
 
 
 def _grams(p: dict, qty: int) -> float:
@@ -134,4 +137,8 @@ def limit_problem(cart: list[Line]) -> str | None:
 def member_profile() -> dict:
     m = MEMBER
     return {"first_name": m["first"], "last_name": m["last"], "member_since": m["since"], "plan": m["plan"],
-            "likes": m["likes"], "dislikes": m["dislikes"], "past_orders": m["pastOrders"]}
+            "likes": m["likes"], "dislikes": m["dislikes"],
+            "the_usual": {"meaning": "Their most recent order. Add these lines when they ask for the usual.",
+                          "order_id": m["pastOrders"][0]["id"], "lines": m["pastOrders"][0]["lines"]},
+            "past_orders": m["pastOrders"],
+            "this_weeks_picks": m.get("weekly_picks", [])}

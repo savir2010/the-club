@@ -16,6 +16,11 @@ const json = (u, o) => fetch(u, o).then((r) => r.json());
 const text = (t) => fetch(`${A}/sms/inject`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ handle: HANDLE, text: t }) }).then((r) => r.json());
 const until = async (fn, ms = 90000) => { const end = Date.now() + ms; while (Date.now() < end) { const v = await fn(); if (v) return v; await new Promise((r) => setTimeout(r, 1000)); } return null; };
 
+// This test registers a made-up mobile and texts Nora, so it runs only against a rehearsal agent.
+if (!(await json(`${A}/sms/status`)).dry_run) {
+  console.log("Nora is live (real iMessage). Run this test against `npm run nora-sms:dry` instead.");
+  process.exit(1);
+}
 await fetch(`${A}/sms/reset`, { method: "POST" });
 const b = await chromium.launch({ channel: "chrome" });
 // RECORD=1 saves a video of the run (a backup for the demo) to .impeccable/review/demo/video
@@ -30,24 +35,21 @@ await p.evaluate(() => sessionStorage.clear());
 await p.goto(`${U}/shop/edb-003?nogate`, { waitUntil: "networkidle" });
 ok(await p.getByText(/save 10%/).first().isVisible(), "product page shows the 10% member saving");
 await p.getByRole("button", { name: "Add to cart" }).first().click(); await p.waitForTimeout(700);
-ok(await p.getByText(/Members save 10% on this cart/).isVisible(), "cart drawer pitches the member saving");
+ok(await p.locator("[data-savings]").getByText("Join and save").isVisible(), "cart drawer shows what joining saves");
 await shot("01-cart-guest");
 await p.getByRole("link", { name: "Proceed to checkout" }).click();
 await p.waitForURL("**/checkout"); await p.waitForTimeout(800);
 
-// 2. join: account (with mobile), ID, medical card (telehealth), AZDHS, bank, plan
+// 2. join: account (with mobile), ID, AZDHS, bank, plan
 await p.getByLabel("Mobile number").fill(PHONE);
 await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(300);
 await p.getByRole("button", { name: /sample ID/ }).click();
 await p.getByRole("button", { name: /Verify my ID/ }).click();
 await p.getByText("ID verified").waitFor();
 await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(300);
-await p.getByText("Book a telehealth visit").click();
-await p.getByRole("button", { name: "Request visit" }).click();
-await p.getByRole("button", { name: "Continue" }).click();
-await p.getByText("Arizona Department of Health Services", { exact: true }).waitFor();
-await p.getByText("Eligible to purchase").waitFor({ timeout: 10000 });
-ok(true, "AZDHS eligibility check runs by itself and passes");
+await p.locator("[data-az-check]").waitFor();
+await p.getByText("Eligible to buy in Arizona").waitFor({ timeout: 10000 });
+ok(true, "Arizona validity check runs by itself and passes");
 await shot("02-azdhs");
 await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(300);
 await p.getByRole("button", { name: "Chase" }).click();
@@ -73,8 +75,9 @@ const before = (await json(`${A}/cart`)).lines.length;
 ok((await text("hey nora can you add the LA Baker flower to my cart")).ok, "text sent to Nora (dry run)");
 const added = await until(async () => (await json(`${A}/cart`)).lines.length > before || null);
 ok(added, "Nora added the item from the text");
-const notice = await p.locator('[data-text-notice="add"]').first().waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
-ok(notice, "website shows 'By text with Nora · Added' notice");
+const counted = await until(async () => (await p.locator("#cart-button").getAttribute("aria-label")).includes("2 items") || null, 8000);
+ok(counted, "website cart count picks up the item from the text");
+ok((await p.getByText(/By text with/).count()) === 0, "no 'by text' pop-up on the website");
 await p.waitForTimeout(300); await shot("04-added-by-text");
 await p.waitForTimeout(1500);
 await p.locator("#cart-button").click(); await p.waitForTimeout(600);
@@ -92,8 +95,9 @@ if (!st) { // Nora may confirm first; say yes
   st = await until(async () => { const s = await json(`${A}/sms/status`); return s.orders > s0.orders ? s : null; });
 }
 ok(st, "Nora placed the order by text");
-const orderNotice = await p.locator('[data-text-notice="order"]').waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
-ok(orderNotice, "website shows 'Order placed' notice with Track order");
+const emptied = await until(async () => (await p.locator("#cart-button").getAttribute("aria-label")).includes("0 items") || null, 8000);
+ok(emptied, "website cart empties once the order is placed");
+ok((await p.getByText(/placed/).count()) === 0, "no order pop-up on the website");
 await shot("06-order-by-text");
 ok((await json(`${A}/cart`)).lines.length === 0, "cart is empty after the order");
 await new Promise((r) => setTimeout(r, 6000)); // let the confirmation texts go out

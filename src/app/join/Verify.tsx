@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Camera, Check, RotateCcw, ScanLine, Upload } from "lucide-react";
+import { AlertCircle, Camera, Check, RotateCcw, ScanLine, Upload } from "lucide-react";
 
 /* ------------------------------------------------------------------
    Document capture: a card-shaped frame with corner guides. Any image
@@ -92,6 +92,81 @@ export function CaptureFrame({
           <RotateCcw size={13} aria-hidden /> Retake
         </button>
       )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------
+   Reading a real photo: the agent reads the card (OCR + Claude) and
+   plain code checks name, date of birth, age and expiry.
+   ------------------------------------------------------------------ */
+
+export type DocResult = {
+  ok: boolean;
+  problems: string[];
+  under_21?: boolean;
+  fields?: { name?: string | null; date_of_birth?: string; age?: number | null; number?: string; expires?: string; issuer?: string | null; marked_sample?: boolean };
+  sample?: boolean;
+};
+
+/** Shrinks a photo to a sensible size for reading, as a JPEG data URL. */
+async function toDataUrl(src: string, max = 1600): Promise<string> {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement("canvas");
+  c.width = Math.round(img.naturalWidth * k);
+  c.height = Math.round(img.naturalHeight * k);
+  c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.88);
+}
+
+export async function verifyDocument(kind: "id" | "medical", photo: string, name: string, dob = ""): Promise<DocResult> {
+  try {
+    const image = await toDataUrl(photo);
+    const r = await fetch("/api/nora/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind, image, name, dob }),
+    });
+    const d = await r.json();
+    return r.ok ? d : { ok: false, problems: [d.message || "The card couldn't be read right now. Try again."] };
+  } catch {
+    return { ok: false, problems: ["The card couldn't be read right now. Try again."] };
+  }
+}
+
+/** Like useChecks, but holds on the last check until the real result is in. */
+export function useDocCheck(steps: string[], running: boolean, result: DocResult | null, msEach = 600) {
+  const [n, setN] = useState(0);
+  const cap = result ? steps.length : steps.length - 1;
+  useEffect(() => {
+    if (!running) {
+      setN(0);
+      return;
+    }
+    if (n >= cap) return;
+    const t = setTimeout(() => setN((x) => x + 1), msEach);
+    return () => clearTimeout(t);
+  }, [running, n, cap, msEach]);
+  const finished = running && !!result && n >= steps.length;
+  return { done: n, finished, passed: finished && !!result?.ok };
+}
+
+export function FailCard({ title, problems, onRetry }: { title: string; problems: string[]; onRetry: () => void }) {
+  return (
+    <div role="alert" className="mt-5 animate-[fade-up_300ms_var(--ease-out)_both] rounded-[var(--radius-card)] border border-[var(--color-clay)]/45 bg-[var(--color-raised)] p-5">
+      <p className="flex items-center gap-2 text-[15px] font-medium">
+        <AlertCircle size={20} className="text-[var(--color-clay)]" aria-hidden />
+        {title}
+      </p>
+      <ul className="mt-3 space-y-1.5 text-[14px] leading-snug">
+        {problems.map((p) => <li key={p}>{p}</li>)}
+      </ul>
+      <button className="btn btn-sm btn-outline mt-4" onClick={onRetry}>
+        <RotateCcw size={14} aria-hidden /> Try again
+      </button>
     </div>
   );
 }
