@@ -1,98 +1,92 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { Check, MessageCircle, X } from "lucide-react";
-import { findProduct, money, PERSONA } from "@/lib/data";
+import { MessageCircle, X } from "lucide-react";
+import { PRODUCTS, PERSONA } from "@/lib/data";
+import { NoraAvatar } from "@/components/brand";
 import { ProductArt } from "@/components/ProductArt";
-import { bumpCart, flyToCart, sleep } from "./motion";
+import { useShop, type TextNotice } from "./ShopState";
 
-export type TextNotice =
-  | { key: string; kind: "add" | "set" | "remove"; id: string; qty: number }
-  | { key: string; kind: "order"; order: { id: string; items: number; total: number; day: string; window: string; to: string; path: string } };
-
-/** What changed in the cart from a text to Nora, shown under the header next to the cart. */
-export function TextNotices({ notices, onDismiss }: { notices: TextNotice[]; onDismiss: (key: string) => void }) {
+/**
+ * Cards for things the member really did by texting Nora: an item added or removed, or an order
+ * placed. They appear only when a real text changed the shared cart (never for rehearsal texts).
+ */
+export function TextNotices() {
+  const { notices, dismissNotice, setCartOpen } = useShop();
   if (!notices.length) return null;
   return (
-    <div className="pointer-events-none fixed top-[120px] right-3 z-[60] flex w-[min(360px,calc(100vw-24px))] flex-col gap-2.5 md:top-[140px] md:right-5" aria-live="polite">
+    <div className="pointer-events-none fixed right-4 bottom-4 left-4 z-[70] flex flex-col items-end gap-2.5 sm:top-[124px] sm:right-6 sm:bottom-auto sm:left-auto sm:w-[360px]" aria-live="polite">
       {notices.map((n) => (
-        <Notice key={n.key} n={n} onDismiss={() => onDismiss(n.key)} />
+        <Notice key={n.key} n={n} dismiss={dismissNotice} openCart={() => setCartOpen(true)} />
       ))}
     </div>
   );
 }
 
-function Notice({ n, onDismiss }: { n: TextNotice; onDismiss: () => void }) {
-  const art = useRef<HTMLDivElement>(null);
-
+function Notice({ n, dismiss, openCart }: { n: TextNotice; dismiss: (key: string) => void; openCart: () => void }) {
+  const onClose = () => dismiss(n.key);
+  // orders stay until closed; cart changes fade after a while
   useEffect(() => {
     if (n.kind === "order") return;
-    let gone = false;
-    (async () => {
-      if (n.kind === "add") {
-        await sleep(450);
-        if (!gone) await flyToCart(art.current);
-      } else bumpCart();
-    })();
-    const t = window.setTimeout(onDismiss, 7000);
-    return () => {
-      gone = true;
-      window.clearTimeout(t);
-    };
-    // once per notice
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const t = window.setTimeout(() => dismiss(n.key), 9000);
+    return () => window.clearTimeout(t);
+  }, [n.kind, n.key, dismiss]);
 
-  const shell =
-    "pointer-events-auto flex items-start gap-3 rounded-[16px] bg-[var(--color-raised)] p-3 pr-2 shadow-[var(--shadow-float)] ring-1 ring-[var(--color-hairline-strong)] animate-[fade-up_260ms_var(--ease-out)_both]";
-  const tag = (
-    <p className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--color-brass)]">
-      <MessageCircle size={13} strokeWidth={2} aria-hidden /> By text with {PERSONA.name}
-    </p>
-  );
-  const close = (
-    <button className="icon-btn size-7 shrink-0" onClick={onDismiss} aria-label="Dismiss">
-      <X size={14} />
-    </button>
-  );
+  const p = n.kind !== "order" ? PRODUCTS.find((x) => x.id === n.id) : null;
+  return (
+    <div
+      data-text-notice={n.kind}
+      className="pointer-events-auto w-full animate-[fade-up_320ms_var(--ease-out)_both] rounded-[var(--radius-card)] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-4 shadow-[0_18px_40px_-20px_rgb(43_38_31/0.5)]"
+    >
+      <div className="flex items-center gap-2.5">
+        <NoraAvatar size={28} />
+        <p className="flex-1 text-[12px] text-[var(--color-muted)]">
+          <MessageCircle size={12} className="mr-1 inline -translate-y-px" aria-hidden />
+          By text with {PERSONA.name} · just now
+        </p>
+        <button className="icon-btn -m-1.5 p-1.5 text-[var(--color-muted)]" onClick={onClose} aria-label="Dismiss">
+          <X size={15} aria-hidden />
+        </button>
+      </div>
 
-  if (n.kind === "order") {
-    const o = n.order;
-    return (
-      <div className={shell} role="status" data-text-notice="order">
-        <span className="grid size-[52px] shrink-0 place-items-center rounded-[12px] bg-[var(--color-brass)] text-[var(--color-on-brass)]">
-          <Check size={22} strokeWidth={2.4} aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          {tag}
-          <p className="mt-0.5 text-[15px] font-semibold">Order {o.id} placed</p>
-          <p className="tnum mt-0.5 text-[13px] text-[var(--color-muted)]">
-            {o.items} item{o.items === 1 ? "" : "s"} · {money(o.total)} · {o.day} {o.window}
+      {n.kind === "order" ? (
+        <div className="mt-3">
+          <p className="text-[15px] font-medium">Order {n.order.id} placed</p>
+          <p className="tnum mt-1 text-[13px] text-[var(--color-muted)]">
+            {n.order.items} item{n.order.items === 1 ? "" : "s"} · ${n.order.total.toFixed(2)} with tax · arriving {n.order.day.toLowerCase()} {n.order.window}
           </p>
-          <Link href={o.path} onClick={onDismiss} className="btn btn-sm btn-primary mt-2.5 rounded-full">
-            Track order
+          <Link href={n.order.path} onClick={onClose} className="btn btn-sm btn-primary mt-3 h-9 w-full rounded-full">
+            Track your order
           </Link>
         </div>
-        {close}
-      </div>
-    );
-  }
-
-  const p = findProduct(n.id);
-  if (!p) return null;
-  const what = n.kind === "add" ? `Added${n.qty > 1 ? ` × ${n.qty}` : ""}` : n.kind === "set" ? `Quantity set to ${n.qty}` : "Removed";
-  return (
-    <div className={shell} role="status" data-text-notice={n.kind}>
-      <div ref={art} className="size-[52px] shrink-0 overflow-hidden rounded-[12px] bg-white ring-1 ring-[var(--color-hairline)]">
-        <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
-      </div>
-      <div className="min-w-0 flex-1">
-        {tag}
-        <p className="mt-0.5 truncate text-[15px] font-semibold">{p.name}</p>
-        <p className="text-[13px] text-[var(--color-muted)]">{what} in your cart</p>
-      </div>
-      {close}
+      ) : (
+        p && (
+          <div className="mt-3 flex items-center gap-3">
+            <span className="size-12 shrink-0 overflow-hidden rounded-[10px] bg-white ring-1 ring-[var(--color-hairline)]">
+              <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-medium">{n.kind === "add" ? "Added to your cart" : "Removed from your cart"}</p>
+              <p className="truncate text-[13px] text-[var(--color-muted)]">
+                {n.kind === "add" && n.qty > 1 ? `${n.qty} × ` : ""}
+                {p.name}
+              </p>
+            </div>
+            {n.kind === "add" && (
+              <button
+                className="btn btn-sm btn-outline h-8 shrink-0 rounded-full px-3"
+                onClick={() => {
+                  openCart();
+                  onClose();
+                }}
+              >
+                View cart
+              </button>
+            )}
+          </div>
+        )
+      )}
     </div>
   );
 }

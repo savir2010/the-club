@@ -24,6 +24,16 @@
         "Pineapple Haze Distillate Cartridge",
         "Pink Lemonade Live Rosin Gummies"
       ],
+      "lines": [
+        {
+          "id": "vap-001",
+          "qty": 1
+        },
+        {
+          "id": "edb-003",
+          "qty": 1
+        }
+      ],
       "total": 59.4
     },
     {
@@ -32,7 +42,13 @@
       "items": [
         "LA Baker Limited Harvest Flower × 2"
       ],
-      "total": 72
+      "lines": [
+        {
+          "id": "flw-001",
+          "qty": 2
+        }
+      ],
+      "total": 68.4
     },
     {
       "id": "CL-19902",
@@ -41,7 +57,74 @@
         "Cap Junky Preroll 14 Party Pack",
         "Blue Raspberry Live Rosin Gummies"
       ],
-      "total": 77.4
+      "lines": [
+        {
+          "id": "pre-002",
+          "qty": 1
+        },
+        {
+          "id": "edb-002",
+          "qty": 1
+        }
+      ],
+      "total": 61.2
+    },
+    {
+      "id": "CL-19655",
+      "date": "Aug 22, 2026",
+      "items": [
+        "Strawberry Whip Distillate Cartridge",
+        "Sour Green Apple Live Rosin Gummies"
+      ],
+      "lines": [
+        {
+          "id": "vap-002",
+          "qty": 1
+        },
+        {
+          "id": "edb-005",
+          "qty": 1
+        }
+      ],
+      "total": 59.4
+    },
+    {
+      "id": "CL-19380",
+      "date": "Jul 30, 2026",
+      "items": [
+        "Pineapple Haze Distillate Cartridge",
+        "Redneck ZaZa Preroll"
+      ],
+      "lines": [
+        {
+          "id": "vap-001",
+          "qty": 1
+        },
+        {
+          "id": "pre-005",
+          "qty": 1
+        }
+      ],
+      "total": 41.38
+    },
+    {
+      "id": "CL-19104",
+      "date": "Jul 8, 2026",
+      "items": [
+        "Cherry Limeade Distillate All-In-One",
+        "Pink Lemonade Live Rosin Gummies"
+      ],
+      "lines": [
+        {
+          "id": "vap-005",
+          "qty": 1
+        },
+        {
+          "id": "edb-003",
+          "qty": 1
+        }
+      ],
+      "total": 63.0
     }
   ],
   "addresses": [
@@ -56,6 +139,16 @@
       "label": "Home",
       "line": "418 Ocotillo Lane, Phoenix, AZ 85018",
       "note": ""
+    }
+  ],
+  "weekly_picks": [
+    {
+      "id": "cnc-003",
+      "reason": "New on the shelf. A calm, happy hybrid, and it's citrus, like you like."
+    },
+    {
+      "id": "vap-005",
+      "reason": "You had this in July. A hybrid all-in-one that's an easy evening companion to your Pineapple Haze."
     }
   ]
 }

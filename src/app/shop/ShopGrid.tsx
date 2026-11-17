@@ -176,9 +176,10 @@ export function ShopGrid({ category, q }: { category: string | null; q: string }
             </div>
           </div>
         ) : (
-          <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
-            {items.map((p) => (
-              <li key={p.id} className="flex">
+          <ul key={items.map((p) => p.id).join()} className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
+            {items.map((p, i) => (
+              // results ease in one after another whenever the filters change
+              <li key={p.id} className="flex animate-[fade-up_360ms_var(--ease-out)_both]" style={{ animationDelay: `${Math.min(i, 12) * 28}ms` }}>
                 <ProductCard p={p} />
               </li>
             ))}

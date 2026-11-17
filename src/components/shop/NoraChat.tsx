@@ -11,7 +11,6 @@ import { NoraAvatar } from "@/components/brand";
 import { ProductArt } from "@/components/ProductArt";
 import { ProductPrice } from "./Price";
 import { totals } from "@/components/cart";
-import { PhonePanel, type Text } from "@/components/PhonePanel";
 import { useShop } from "./ShopState";
 import { useSession } from "@/lib/session";
 import { bumpCart, flyToCart, press, reducedMotion, sleep } from "./motion";
@@ -89,7 +88,7 @@ function StatusLine({ id, text }: { id: string; text: string }) {
 /* ---------------------------------------------------------------- window */
 
 export function NoraChat() {
-  const { chatOpen, setChatOpen, phone, setPhone, lines, add, setQty, remove, setCartOpen } = useShop();
+  const { chatOpen, setChatOpen, lines, add, setQty, remove, setCartOpen } = useShop();
   const router = useRouter();
   const session = useSession();
   const memberRef = useRef(session.member);
@@ -107,8 +106,6 @@ export function NoraChat() {
   const [draft, setDraft] = useState("");
   const [unavailable, setUnavailable] = useState(false);
   const started = useRef(false);
-  const [texts, setTexts] = useState<Text[]>([]);
-  const [phoneBusy, setPhoneBusy] = useState(false);
   const abort = useRef<AbortController | null>(null);
   const linesRef = useRef(lines);
   // Voice mode: the member talks, Nora answers out loud and then listens again.
@@ -119,7 +116,7 @@ export function NoraChat() {
     const s = sendBtn.current?.getBoundingClientRect();
     return s ? { x: s.left - 160, y: s.top - 40 } : { x: window.innerWidth - 200, y: window.innerHeight - 160 };
   });
-  const sendRef = useRef<(input: { message: string; channel?: "chat" | "sms" | "voice" }) => void>(() => {});
+  const sendRef = useRef<(input: { message: string; channel?: "chat" | "voice" }) => void>(() => {});
   const voice = useVoice({
     onInterim: (t) => setDraft(t),
     onFinal: (t) => sendRef.current({ message: t, channel: "voice" }),
@@ -166,17 +163,13 @@ export function NoraChat() {
   }, []);
 
   /** One turn with the agent: a typed message, or an action (opening the chat, asking for a person). */
-  async function send(input: { message: string; channel?: "chat" | "sms" | "voice" } | { action: "start" | "away" }) {
+  async function send(input: { message: string; channel?: "chat" | "voice" } | { action: "start" }) {
     const said = "message" in input ? input.message.trim() : "";
     if (busy || ("message" in input && !said)) return;
-    const viaPhone = ("channel" in input && input.channel === "sms") || ("action" in input && input.action === "away");
     setBusy(true);
-    setPhoneBusy(viaPhone);
-    if (!viaPhone) {
-      setDraft("");
-      setChips([]);
-    }
-    setMsgs((m) => [...m, ...(said && !viaPhone ? [{ from: "member" as const, text: said }] : []), { from: "nora", parts: [] }]);
+    setDraft("");
+    setChips([]);
+    setMsgs((m) => [...m, ...(said ? [{ from: "member" as const, text: said }] : []), { from: "nora", parts: [] }]);
 
     // Animations run one after another, in the order the agent acted.
     let queue = Promise.resolve();
@@ -188,7 +181,7 @@ export function NoraChat() {
     let finished: unknown[] | null = null;
     let nextChips: string[] = [];
     // In voice mode each finished sentence is spoken while the rest is still streaming in.
-    const speak = voiceOn.current && !viaPhone;
+    const speak = voiceOn.current;
     const split = sentenceSplitter();
     let spoke = false;
     let lastAction = ""; // spoken if Nora acts without saying anything
@@ -243,10 +236,6 @@ export function NoraChat() {
         }
         case "chips":
           nextChips = e.items; // shown once the turn is over
-          break;
-        case "sms":
-          setTexts((ts) => [...ts, { from: "nora", text: e.text }]);
-          setPhone(true); // with the toggle gone, a text from Nora brings the phone up
           break;
         case "checkout": {
           const { t: _t, ...plan } = e;
@@ -313,7 +302,6 @@ export function NoraChat() {
     await queue;
     if (speak) await voice.finished();
     if (nextChips.length) setChips(nextChips);
-    setPhoneBusy(false);
     let plan = checkout as CheckoutPlan | null;
     // Only a member can be checked out by Nora; a guest is taken to checkout to join first.
     if (plan && !memberRef.current) plan = { ...plan, pay: false };
@@ -359,17 +347,6 @@ export function NoraChat() {
     if (!chatOpen && voiceOn.current) voiceOff();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatOpen]);
-
-  /** A reply typed in the simulated phone. YES confirms the cart; anything else goes to Nora. */
-  const replyByText = (text: string) => {
-    setTexts((ts) => [...ts, { from: "member", text }]);
-    if (/^\s*yes\b/i.test(text)) {
-      setPhone(false);
-      router.push("/orders/CL-20512");
-      return;
-    }
-    send({ message: text, channel: "sms" });
-  };
 
   const reset = () => {
     voiceOff();
@@ -431,16 +408,11 @@ export function NoraChat() {
             ? "Turn voice off"
             : "Talk by voice";
   const last = msgs[msgs.length - 1];
-  const thinking = busy && !phoneBusy && last?.from === "nora" && last.parts.length === 0;
+  const thinking = busy && last?.from === "nora" && last.parts.length === 0;
 
   return (
     <>
       {pointer.node}
-      {phone && (
-        <div className="fixed bottom-6 left-6 z-40 hidden md:block">
-          <PhonePanel texts={texts} busy={phoneBusy} onReply={replyByText} onClose={() => setPhone(false)} />
-        </div>
-      )}
 
       {hook && !mounted && (
         <div className="fixed right-5 bottom-[88px] z-40 w-[264px] animate-[hook-in_520ms_cubic-bezier(0.34,1.4,0.64,1)_both] sm:right-6">

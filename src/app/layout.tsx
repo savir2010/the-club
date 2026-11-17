@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { AgeGate } from "@/components/AgeGate";
+import { NavProgress } from "@/components/NavProgress";
 import { SessionProvider } from "@/lib/session";
 import { ShopProvider } from "@/components/shop/ShopState";
 import { CartDrawer } from "@/components/shop/CartDrawer";
@@ -28,6 +30,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning className={`${manrope.variable}`}>
       <body>
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <SessionProvider>
           <ShopProvider>
             {children}

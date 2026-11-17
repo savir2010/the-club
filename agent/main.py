@@ -3,6 +3,7 @@
 Run:  .venv/bin/uvicorn main:app --port 8100   (from this folder)
 The Next.js route /api/nora proxies to POST /chat.
 """
+import hmac
 import json
 import logging
 import os
@@ -15,13 +16,13 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 import config
-import imessage
 import shop
 import cart_store
 import sms_bridge
 import edge_tts
+import verify
 
-from prompt import CHAT_OPENED, REFUSAL_TEXT, STEPPED_AWAY, SYSTEM_PROMPT, TEXT_PREFIX, VOICE_PREFIX, IMESSAGE_PREFIX, PHONE_PREFIX
+from prompt import CHAT_OPENED, REFUSAL_TEXT, SYSTEM_PROMPT, VOICE_PREFIX, PHONE_PREFIX
 from tools import TOOLS, run_tool
 
 log = logging.getLogger("nora")
@@ -43,6 +44,18 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Nora concierge agent", lifespan=lifespan)
+
+# When hosted, only the shop may call Nora: it sends NORA_AGENT_SECRET in x-nora-secret.
+# Locally the secret is unset and nothing changes. /health stays open for the host's checks.
+AGENT_SECRET = os.getenv("NORA_AGENT_SECRET", "")
+
+
+@app.middleware("http")
+async def require_shop_secret(request: Request, call_next):
+    if AGENT_SECRET and request.url.path != "/health":
+        if not hmac.compare_digest(request.headers.get("x-nora-secret", ""), AGENT_SECRET):
+            return JSONResponse({"message": "Not allowed."}, status_code=401)
+    return await call_next(request)
 client = anthropic.AsyncAnthropic(api_key=config.API_KEY) if config.API_KEY else None
 
 FALLBACK = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
@@ -56,8 +69,8 @@ class CartLine(BaseModel):
 class ChatRequest(BaseModel):
     history: list[dict[str, Any]] = Field(default_factory=list, max_length=300)
     message: str | None = Field(default=None, max_length=2000)
-    action: Literal["start", "away"] | None = None
-    channel: Literal["chat", "sms", "voice", "imessage", "phone"] = "chat"
+    action: Literal["start"] | None = None
+    channel: Literal["chat", "voice", "phone"] = "chat"
     cart: list[CartLine] = Field(default_factory=list)
     # Who is shopping. Guests can browse, chat and fill a cart; only members check out, and only
     # members can have Nora place an order for them.
@@ -71,12 +84,6 @@ def line(event: dict) -> str:
 async def run_turn(req: ChatRequest, request: Request) -> AsyncIterator[str]:
     if req.action == "start":
         user_text = CHAT_OPENED
-    elif req.action == "away":
-        user_text = STEPPED_AWAY
-    elif req.channel == "sms":
-        user_text = f"{TEXT_PREFIX} {(req.message or '').strip()}"
-    elif req.channel == "imessage":
-        user_text = f"{IMESSAGE_PREFIX} {(req.message or '').strip()}"
     elif req.channel == "phone":
         user_text = f"{PHONE_PREFIX} {(req.message or '').strip()}"
     elif req.channel == "voice":
@@ -195,32 +202,6 @@ async def tts(req: SpeakRequest):
     return StreamingResponse(audio(), media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
 
 
-class IMessageStart(BaseModel):
-    cart: list[CartLine] = Field(default_factory=list)
-
-
-@app.post("/imessage/start")
-async def imessage_start(req: IMessageStart):
-    """Scripted demo: Nora texts the demo phone over iMessage, then waits for YES."""
-    cart: list[shop.Line] = [{"id": l.id, "qty": l.qty} for l in req.cart if l.id in shop.BY_ID]
-    try:
-        return await imessage.start(cart)
-    except Exception as e:
-        log.warning("imessage start failed: %s", e)
-        return JSONResponse({"message": str(e)}, status_code=500)
-
-
-@app.get("/imessage/status")
-async def imessage_status():
-    return imessage.status()
-
-
-@app.post("/imessage/stop")
-async def imessage_stop():
-    imessage.stop()
-    return imessage.status()
-
-
 @app.get("/sms/status")
 async def sms_status():
     return sms_bridge.status()
@@ -247,6 +228,15 @@ async def sms_stop():
 async def sms_reset():
     """Forget every text conversation and cart (between rehearsals)."""
     return sms_bridge.reset()
+
+
+@app.post("/sms/weekly")
+async def sms_weekly():
+    """Nora texts this week's picks to the registered member (the weekly routine, on demand)."""
+    try:
+        return await sms_bridge.send_weekly()
+    except Exception as e:
+        return JSONResponse({"message": str(e)}, status_code=400)
 
 
 class SmsRegister(BaseModel):
@@ -303,6 +293,28 @@ async def sms_inject(req: SmsInject):
         return {"ok": True}
     except Exception as e:
         return JSONResponse({"message": str(e)}, status_code=400)
+
+
+class VerifyRequest(BaseModel):
+    kind: Literal["id", "medical"]
+    image: str = Field(min_length=32, max_length=9_000_000)  # data: URL of the front of the card
+    name: str = Field(min_length=1, max_length=120)  # the name the member entered (or the name read from their ID)
+    dob: str = Field(default="", max_length=10)  # YYYY-MM-DD the member entered (ID only)
+
+
+@app.post("/verify")
+async def verify_document(req: VerifyRequest):
+    """Read an ID or medical card photo and check it against what the member entered. Nothing is stored."""
+    if client is None:
+        return JSONResponse({"message": "No API key."}, status_code=503)
+    try:
+        read = await verify.read_document(client, req.image, req.kind)
+    except ValueError as e:
+        return JSONResponse({"message": str(e)}, status_code=400)
+    except Exception:
+        log.exception("document read failed")
+        return JSONResponse({"message": "The card couldn't be read right now. Try again."}, status_code=502)
+    return verify.check_id(read, req.name, req.dob) if req.kind == "id" else verify.check_medical(read, req.name)
 
 
 @app.get("/health")

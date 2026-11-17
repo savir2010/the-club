@@ -47,11 +47,12 @@ Open that address on the demo laptop. The address changes every time you run `np
 
 **The flow:**
 1. Browse and add to the cart.
-2. Proceed to checkout and join: ID, the state check, bank, then the plan step.
+2. Proceed to checkout and join: ID, the Arizona check, bank, then the plan step.
 3. On the plan step, enter **your real mobile number** under "Text Nora anytime".
 4. Text this Mac's number from that phone: "add the LA Baker flower".
 5. Watch it arrive in the website cart.
-6. Text "deliver tonight 8 to 9 at home, place it". The site shows "Order placed" with a tracking link.
+6. Optional: tap **Text me these** under "This week from Nora". Nora texts two picks; reply "2" or "the usual".
+7. Text "deliver tonight 8 to 9 at home, place it". Nora texts back the order number and a tracking link, and the website cart empties.
 
 **Before the audience arrives:**
 - Do one real test text, so the macOS "allow Terminal to control Messages" popup doesn't appear mid-demo.
@@ -68,6 +69,7 @@ Open that address on the demo laptop. The address changes every time you run `np
 | **Stop texting immediately** | `curl -X POST localhost:8100/sms/stop` (or Ctrl-C to stop everything) |
 | Resume texting | `curl -X POST localhost:8100/sms/start` |
 | Reset between rehearsals | `curl -X POST localhost:8100/sms/reset` |
+| Nora texts this week's picks | `curl -X POST localhost:8100/sms/weekly` (or "Text me these" on the shop page) |
 
 **Caps:** at most 60 replies per run (`NORA_SMS_MAX_REPLIES` changes it). Group chats and unknown numbers are ignored.
 

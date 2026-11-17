@@ -79,9 +79,25 @@ export const PLANS = [
 export const MEMBER_SAVE_PCT = Math.round(
   (PRODUCTS.reduce((s, p) => s + (1 - p.member_price / p.retail_price), 0) / PRODUCTS.length) * 100,
 );
+/** The Box: any `size` items in one order take `pct` off the member subtotal (mix and match). */
+export const BOX = settings.box as { size: number; pct: number };
+/** Box discount on a member subtotal, rounded to the cent; zero until the cart holds a full box. */
+export const boxDiscount = (count: number, memberSubtotal: number) =>
+  count >= BOX.size ? Math.round(memberSubtotal * BOX.pct) / 100 : 0;
 export const DELIVERY_SLOTS = settings.delivery_slots as Record<"Today" | "Tomorrow", string[]>;
 export const ADDRESSES = member.addresses as { id: string; label: string; line: string; note: string }[];
 export const money = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export const PERSONA = persona;
+
+export type PastOrder = { id: string; date: string; items: string[]; lines: { id: string; qty: number }[]; total: number };
+export const PAST_ORDERS = member.pastOrders as PastOrder[];
+/** The member's usual: their most recent order. */
+export const USUAL = PAST_ORDERS[0];
+/** What membership has saved the demo member so far: retail value minus what they paid, over every past order. */
+export const MEMBER_SAVED = Math.round(
+  PAST_ORDERS.reduce((s, o) => s + o.lines.reduce((r, l) => r + byId(l.id).retail_price * l.qty, 0) - o.total, 0) * 100,
+) / 100;
+/** This week's picks Nora chose for the member (also what she texts on Fridays). */
+export const WEEKLY_PICKS = member.weekly_picks as { id: string; reason: string }[];

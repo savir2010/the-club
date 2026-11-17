@@ -1,4 +1,4 @@
-// Walks the join flow: ID capture + check, medical card check, bank link, and captures each stage.
+// Walks the join flow: ID capture + check, state check, bank link, and captures each stage.
 import { chromium } from "playwright";
 const OUT = ".impeccable/review/join";
 import fs from "fs"; fs.mkdirSync(OUT, { recursive: true });
@@ -16,11 +16,8 @@ await p.screenshot({ path: `${OUT}/2-id-scanning.png` });
 await p.getByText("ID verified").waitFor(); await p.waitForTimeout(400);
 await p.screenshot({ path: `${OUT}/3-id-verified.png`, fullPage: true });
 await cont(); await p.waitForTimeout(400);
-await p.getByText("Upload my card").click();
-await p.getByRole("button", { name: /sample card/ }).click();
-await p.getByRole("button", { name: /Verify my card/ }).click();
-await p.getByText("Medical card on file").waitFor(); await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/4-card-verified.png`, fullPage: true });
+await p.getByText("Eligible to buy in Arizona").waitFor({ timeout: 10000 }); await p.waitForTimeout(400);
+await p.screenshot({ path: `${OUT}/4-state-check.png`, fullPage: true });
 await cont(); await p.waitForTimeout(400);
 await p.screenshot({ path: `${OUT}/5-bank-pick.png` });
 await p.getByRole("button", { name: "Chase" }).click(); await p.waitForTimeout(400);

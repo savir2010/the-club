@@ -3,22 +3,22 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, MessageCircle, Pause, Pencil, Play, SkipForward } from "lucide-react";
-import { BUNDLES, PERSONA, byId, money } from "@/lib/data";
+import { BOX as BOX_OFFER, PERSONA, byId, money } from "@/lib/data";
+import { totals } from "@/components/cart";
 import { SiteFooter } from "@/components/SiteChrome";
 import { ShopHeader } from "@/components/shop/ShopHeader";
 import { SignedInOnly } from "@/components/SignedInOnly";
 import { ProductArt } from "@/components/ProductArt";
 import { Ledger } from "@/components/Ledger";
 
-const BOX = [
+const BOX: { id: string; qty: number; bundle?: number }[] = [
   { id: "vap-001", qty: 1 },
-  { id: "flw-001", qty: 2, bundle: BUNDLES[0].price_each },
+  { id: "flw-001", qty: 2 },
 ];
 
 export default function Subscriptions() {
   const [state, setState] = useState<"active" | "skipped" | "paused">("active");
-  const retail = BOX.reduce((s, l) => s + byId(l.id).retail_price * l.qty, 0);
-  const member = BOX.reduce((s, l) => s + (l.bundle ?? byId(l.id).member_price) * l.qty, 0);
+  const { retail, member } = totals(BOX);
 
   const next = state === "skipped" ? "January 7, 2027" : "December 7, 2026";
 
@@ -60,7 +60,7 @@ export default function Subscriptions() {
                 Each month <span className="tnum line-through">{money(retail)}</span>
               </p>
               <p className="flex items-baseline gap-3">
-                <span className="text-[14px] text-[var(--color-muted)]">Member price</span>
+                <span className="text-[14px] text-[var(--color-muted)]">Member price, {BOX_OFFER.pct}% box discount applied</span>
                 <span className="num text-[36px] leading-none text-[var(--color-brass)]">{money(member)}</span>
               </p>
             </div>

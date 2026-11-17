@@ -16,5 +16,10 @@
     "_note": "Demo fees for the pitch; set by Copperstate before launch.",
     "monthly": 12,
     "yearly": 99
+  },
+  "box": {
+    "_note": "Mix and match: any `size` items in one order take `pct` percent off the member subtotal. Replaces the old per-brand bundles.",
+    "size": 3,
+    "pct": 15
   }
 }

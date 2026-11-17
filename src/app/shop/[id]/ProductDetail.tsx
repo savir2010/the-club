@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, ChevronRight, IdCard, MapPin, MessageCircle, Repeat, Truck } from "lucide-react";
-import { MEMBER, PERSONA, PRODUCTS, bundleFor, byId, money, type Product } from "@/lib/data";
+import { ChevronRight, IdCard, MapPin, MessageCircle, Repeat, Truck } from "lucide-react";
+import { BoxMeter } from "@/components/cart";
+import { MEMBER, PERSONA, PRODUCTS, byId, money, type Product } from "@/lib/data";
 import { ProductArt } from "@/components/ProductArt";
 import { Aurora } from "@/components/Aurora";
 import { NoraAvatar } from "@/components/brand";
@@ -114,7 +115,6 @@ export function ProductDetail({ id }: { id: string }) {
   const router = useRouter();
   const { add, lines, setChatOpen } = useShop();
   const [qty, setQty] = useState(1);
-  const bundle = bundleFor(p);
   const { member, signedIn } = useSession();
   const inCart = lines.find((l) => l.id === p.id)?.qty ?? 0;
   const dist = distribution(p.rating);
@@ -166,15 +166,7 @@ export function ProductDetail({ id }: { id: string }) {
           <div className="mt-6 border-t border-[var(--color-hairline)] pt-6">
             <ProductPrice p={p} size={40} detail />
             <p className="mt-2 text-[13px] text-[var(--color-muted)]">Free delivery · Tax calculated at checkout</p>
-            {bundle && (
-              <div className="mt-4 flex items-center gap-3 rounded-[12px] border border-[var(--color-brass)]/40 bg-[var(--color-brass)]/[0.06] px-4 py-3">
-                <BadgeCheck size={20} strokeWidth={1.5} className="shrink-0 text-[var(--color-brass)]" aria-hidden />
-                <p className="text-[14px]">
-                  <span className="font-medium">Bundle:</span> buy {bundle.min_qty} or more {p.brand} {p.format} {p.category.toLowerCase()} and pay{" "}
-                  <span className="num text-[18px] text-[var(--color-brass)]">{money(bundle.price_each)}</span> each.
-                </p>
-              </div>
-            )}
+            <BoxMeter lines={lines} className="mt-4" />
           </div>
 
           <table className="mt-6 w-full border-t border-[var(--color-hairline)]">
@@ -233,11 +225,6 @@ export function ProductDetail({ id }: { id: string }) {
                     ))}
                   </select>
                 </label>
-                {bundle && qty < bundle.min_qty && (
-                  <button onClick={() => setQty(bundle.min_qty)} className="mt-2 text-left text-[13px] text-[var(--color-brass)] hover:underline">
-                    Make it {bundle.min_qty} for the bundle price
-                  </button>
-                )}
                 <div className="mt-4 grid gap-2.5">
                   <button className="btn btn-primary w-full rounded-full" onClick={() => add(p.id, qty)}>Add to cart</button>
                   <button

@@ -74,7 +74,61 @@
 :root[data-theme="dark"] .field:hover { border-color: rgb(241 233 220 / 0.3); }
 :root[data-theme="dark"] .aurora { background: linear-gradient(160deg, #2a241c 0%, #1f1a14 55%, #15120e 100%); }
 :root[data-theme="dark"] .aurora-c { opacity: 0.25; }
-html { transition: background-color 200ms; }
+html { transition: background-color 200ms; scroll-behavior: smooth; }
+
+/* ---------------------------------------------------------------
+   Navigation and click feedback
+   --------------------------------------------------------------- */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.page-in { animation: page-in 380ms var(--ease-out) both; }
+
+.nav-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 200;
+  background: var(--color-brass-hi, var(--color-brass));
+  transform-origin: left;
+  transform: scaleX(0);
+  opacity: 0;
+  pointer-events: none;
+}
+.nav-progress[data-state="loading"] { opacity: 1; animation: nav-grow 2.4s var(--ease-out) forwards; }
+.nav-progress[data-state="done"] {
+  transform: scaleX(1);
+  opacity: 0;
+  transition: transform 180ms var(--ease-out), opacity 320ms 140ms;
+}
+@keyframes nav-grow {
+  from { transform: scaleX(0.05); }
+  to { transform: scaleX(0.85); }
+}
+
+@keyframes count-pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.count-pop { animation: count-pop 420ms cubic-bezier(0.34, 1.5, 0.64, 1) both; }
+
+@keyframes added-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.added-in { animation: added-in 260ms var(--ease-out) both; }
+
+@keyframes drawer-out {
+  to { transform: translateX(32px); opacity: 0; }
+}
+@keyframes scrim-out {
+  to { opacity: 0; }
+}
+@keyframes line-out {
+  to { opacity: 0; transform: translateX(24px); }
+}
 
 @keyframes slide-in {
   from { transform: translateX(16px); opacity: 0; }
@@ -238,6 +292,8 @@ html { transition: background-color 200ms; }
     transition: color 160ms, background-color 160ms;
   }
   .icon-btn:hover { color: var(--color-ivory); background: rgb(43 38 31 / 0.06); }
+  .icon-btn { transition: color 160ms, background-color 160ms, transform 120ms var(--ease-out); }
+  .icon-btn:active { transform: scale(0.92); }
 
   .field-label {
     display: block;
@@ -448,18 +504,6 @@ html.reveal-ready .reveal-pending.is-in {
 }
 @media (prefers-reduced-motion: reduce) { .voice-ring { animation: none; box-shadow: 0 0 0 3px rgb(141 107 61 / 0.35); } }
 
-/* Simulated iMessage thread (demo/imessage) */
-.imsg-in { animation: imsg-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
-@keyframes imsg-in {
-  from { transform: translateY(10px) scale(0.96); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-.imsg-tail-me::after, .imsg-tail-them::after {
-  content: ""; position: absolute; bottom: 0; width: 14px; height: 18px; background: inherit;
-}
-.imsg-tail-me::after { right: -5px; border-bottom-left-radius: 14px 12px; clip-path: path("M0 0 C 2 10, 6 15, 14 18 C 6 18, 2 17, 0 15 Z"); }
-.imsg-tail-them::after { left: -5px; border-bottom-right-radius: 14px 12px; clip-path: path("M14 0 C 12 10, 8 15, 0 18 C 8 18, 12 17, 14 15 Z"); }
-
 /* Nora's cursor: the ring on what she's about to click, and the click ripple */
 .nora-target {
   outline: 2px solid #8d6b3d !important;
@@ -499,9 +543,10 @@ html.reveal-ready .reveal-pending.is-in {
 .bar-link {
   border-radius: 8px;
   outline: 1px solid transparent;
-  transition: outline-color 140ms;
+  transition: outline-color 140ms, transform 120ms var(--ease-out);
 }
 .bar-link:hover { outline-color: rgb(243 236 224 / 0.45); }
+.bar-link:active { transform: scale(0.96); }
 
 /* Store price: dollars large, cents raised (the shopping convention) */
 .price {
