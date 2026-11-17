@@ -221,7 +221,7 @@ function Header() {
             >
               <span className="relative">
                 <ShoppingBag size={26} strokeWidth={1.5} aria-hidden />
-                <span className="tnum absolute -top-1.5 -right-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[var(--color-brass)] px-1 text-[11px] font-bold text-[var(--color-on-brass)]">
+                <span key={t.count} className="count-pop tnum absolute -top-1.5 -right-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[var(--color-brass)] px-1 text-[11px] font-bold text-[var(--color-on-brass)]">
                   {t.count}
                 </span>
               </span>

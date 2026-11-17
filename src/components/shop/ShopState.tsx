@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Line } from "@/components/cart";
 import { useSession } from "@/lib/session";
-import { TextNotices, type TextNotice } from "./TextNotices";
+import { TextNotices } from "./TextNotices";
 
 type ShopState = {
   lines: Line[];
@@ -14,9 +14,14 @@ type ShopState = {
   setCartOpen: (v: boolean) => void;
   chatOpen: boolean;
   setChatOpen: (v: boolean) => void;
-  phone: boolean;
-  setPhone: (v: boolean) => void;
+  notices: TextNotice[];
+  dismissNotice: (key: string) => void;
 };
+
+/** Something a member really did by texting Nora. Only real texts (source "sms") make one. */
+export type TextNotice =
+  | { key: string; kind: "add" | "remove"; id: string; qty: number }
+  | { key: string; kind: "order"; order: NonNullable<CartEvent["order"]> };
 
 const Ctx = createContext<ShopState | null>(null);
 
@@ -42,8 +47,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<Line[]>(START);
   const [cartOpen, setCartOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [phone, setPhone] = useState(false);
   const [notices, setNotices] = useState<TextNotice[]>([]);
+  const dismissNotice = useCallback((key: string) => setNotices((ns) => ns.filter((n) => n.key !== key)), []);
+
+  // Wake Nora's agent as soon as the shop opens. A free host puts it to sleep when idle, and waking
+  // takes a moment, so it's ready by the time someone opens the chat.
+  useEffect(() => {
+    fetch("/api/nora/sms/info", { cache: "no-store" }).catch(() => {});
+  }, []);
 
   // per-tab convenience only: the cart survives moving between grid and product pages
   useEffect(() => {
@@ -60,7 +71,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   /*
    * Members share one cart with Nora's text thread. The site sends its own changes to the agent
-   * and polls for changes made by text, which arrive with a notice and fly into the cart.
+   * and polls for changes made by real texts to Nora, which show up in the cart.
    * Guests keep a cart in this tab only.
    */
   const linesRef = useRef(lines);
@@ -90,19 +101,22 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           if (d.v < version.current) version.current = 0; // the agent restarted
           const theirs = d.events.filter((e) => e.source !== "web");
           version.current = Math.max(version.current, d.v);
+          // Announce only what a real text did. Rehearsal (dry-run) changes are tagged differently.
+          const fromTexts: TextNotice[] = d.events.flatMap((e): TextNotice[] =>
+            e.source !== "sms"
+              ? []
+              : e.kind === "order" && e.order
+                ? [{ key: `o${e.v}`, kind: "order", order: e.order }]
+                : (e.kind === "add" || e.kind === "remove") && e.id
+                  ? [{ key: `e${e.v}`, kind: e.kind, id: e.id, qty: e.qty ?? 1 }]
+                  : [],
+          );
+          if (fromTexts.length) setNotices((ns) => [...ns, ...fromTexts].slice(-3));
           if (theirs.length && !same(d.lines, linesRef.current)) {
             const added = new Set(theirs.filter((e) => e.kind === "add").map((e) => e.id));
             remote.current = d.lines;
             setLines(d.lines.map((l) => ({ ...l, fresh: added.has(l.id) })));
           }
-          const fresh: TextNotice[] = theirs.flatMap((e): TextNotice[] =>
-            e.kind === "add" && e.id ? [{ key: `${e.v}`, kind: "add", id: e.id, qty: e.qty ?? 1 }]
-            : e.kind === "remove" && e.id ? [{ key: `${e.v}`, kind: "remove", id: e.id, qty: 0 }]
-            : e.kind === "set" && e.id ? [{ key: `${e.v}`, kind: "set", id: e.id, qty: e.qty ?? 1 }]
-            : e.kind === "order" && e.order ? [{ key: `${e.v}`, kind: "order", order: e.order }]
-            : [],
-          );
-          if (fresh.length) setNotices((ns) => [...ns, ...fresh].slice(-4));
         }
       } catch {}
       if (!stop) timer = window.setTimeout(poll, POLL_MS);
@@ -160,16 +174,15 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     [],
   );
   const remove = useCallback((id: string) => setLines((ls) => ls.filter((l) => l.id !== id)), []);
-  const dismiss = useCallback((key: string) => setNotices((ns) => ns.filter((n) => n.key !== key)), []);
 
   const value = useMemo(
-    () => ({ lines, add, setQty, remove, cartOpen, setCartOpen, chatOpen, setChatOpen, phone, setPhone }),
-    [lines, add, setQty, remove, cartOpen, chatOpen, phone],
+    () => ({ lines, add, setQty, remove, cartOpen, setCartOpen, chatOpen, setChatOpen, notices, dismissNotice }),
+    [lines, add, setQty, remove, cartOpen, chatOpen, notices, dismissNotice],
   );
   return (
     <Ctx.Provider value={value}>
       {children}
-      <TextNotices notices={notices} onDismiss={dismiss} />
+      <TextNotices />
     </Ctx.Provider>
   );
 }

@@ -92,12 +92,12 @@ _TOOLS = [
     },
     {
         "name": "get_member_profile",
-        "description": "Return the member's name, plan, past orders, likes and dislikes.",
+        "description": "Return the member's name, plan, likes, dislikes, past orders (with product ids), the_usual (their most recent order, ready to add) and this week's picks you chose for them.",
         "input_schema": {"type": "object", "properties": {}},
     },
     {
         "name": "get_bundles",
-        "description": "Return bundle offers (buy N or more, lower price each) and whether they fit the current cart.",
+        "description": "Return the Box offer (any 3 items in one order, an extra percentage off; mix and match) and how many more items the current cart needs.",
         "input_schema": {"type": "object", "properties": {}},
     },
     {
@@ -112,11 +112,6 @@ _TOOLS = [
                 "place_order": {"type": "boolean"},
             },
         },
-    },
-    {
-        "name": "send_text",
-        "description": "Send a text to the member's phone (a simulated text thread on screen; no real SMS is sent). Use when the member has stepped away from the screen or asks to finish by text. Plain words, under 300 characters. If the cart is ready, give the item count and the member subtotal from view_cart and ask them to reply YES to send it.",
-        "input_schema": {"type": "object", "properties": {"message": {"type": "string", "maxLength": 300}}, "required": ["message"]},
     },
     {
         "name": "suggest_replies",
@@ -173,10 +168,6 @@ class _Checkout(BaseModel):
     place_order: bool = False
 
 
-class _Text(BaseModel):
-    message: str = Field(min_length=1, max_length=300)
-
-
 class _Replies(BaseModel):
     replies: list[str] = Field(min_length=1)
 
@@ -196,7 +187,6 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "get_member_profile": _Empty,
     "get_bundles": _Empty,
     "go_to_checkout": _Checkout,
-    "send_text": _Text,
     "suggest_replies": _Replies,
 }
 
@@ -281,7 +271,7 @@ def run_tool(name: str, raw: Any, cart: list[shop.Line], emit: Emit, member: boo
                 return Outcome(content="The shopper is a guest, not signed in. There is no profile; don't use a name or past orders.", is_error=True)
             return _json(shop.member_profile())
         case "get_bundles":
-            return _json({"bundles": shop.bundles_for(cart)})
+            return _json({"box": shop.box_offer(cart)})
         case "go_to_checkout":
             if not cart:
                 return Outcome(content="The cart is empty. Add something first.", is_error=True)
@@ -309,7 +299,7 @@ def run_tool(name: str, raw: Any, cart: list[shop.Line], emit: Emit, member: boo
             if not member:
                 note = (
                     "The shopper is a guest, so you can't pay or place the order for them. They're being taken to checkout, "
-                    "where they join the Club first (ID, medical card if needed, bank, plan), then choose delivery and pay themselves. "
+                    "where they join the Club first (ID, state check, bank, plan), then choose delivery and pay themselves. "
                     "Tell them that in one short line" + (" and that you can't place it for them until they're a member." if wanted_pay else ".")
                 )
             elif plan["pay"] and phone:
@@ -320,9 +310,6 @@ def run_tool(name: str, raw: Any, cart: list[shop.Line], emit: Emit, member: boo
             else:
                 note = "The member is being taken to checkout to review it."
             return _json({"ok": True, "note": note, "plan": plan, "cart": shop.cart_view(cart)})
-        case "send_text":
-            emit({"t": "sms", "text": a["message"].strip()})
-            return Outcome(content="Text delivered to the member's phone thread. A reply of YES confirms the cart and places the order.")
         case "suggest_replies":
             replies = [r.strip()[:40] for r in a["replies"] if r.strip()][:4]
             emit({"t": "chips", "items": replies})

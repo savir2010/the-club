@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Eye, ThumbsDown, ThumbsUp } from "lucide-react";
-import { MEMBER, PERSONA, money } from "@/lib/data";
+import { MEMBER, MEMBER_SAVED, PAST_ORDERS, PERSONA, money } from "@/lib/data";
+import { ReorderButton } from "@/components/shop/ReorderButton";
 import { SiteFooter } from "@/components/SiteChrome";
 import { ShopHeader } from "@/components/shop/ShopHeader";
 import { SignedInOnly } from "@/components/SignedInOnly";
@@ -30,6 +31,12 @@ export default function Account() {
         <p className="mt-2 text-[var(--color-muted)]">
           Member since {MEMBER.since} · {MEMBER.plan}
         </p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-panel)] bg-[#17130f] px-7 py-6 text-[#f3ece0]" data-saved>
+          <p className="num text-[44px] leading-none text-[#e6c992]">{money(MEMBER_SAVED)}</p>
+          <p className="max-w-[48ch] text-[15px] leading-snug text-[#d8cdb9]">
+            saved as a member since {MEMBER.since.split(" ")[0]}, across {PAST_ORDERS.length} orders. Delivery was free every time.
+          </p>
+        </div>
 
         <div className="mt-14 grid gap-16 lg:grid-cols-12">
           <div className="space-y-16 lg:col-span-7">
@@ -41,14 +48,13 @@ export default function Account() {
                 <Row label="Delivery address" value={MEMBER.address} action="Change" />
                 <Row label="Pay with" value={<span className="tnum">{MEMBER.bank}</span>} action="Change" />
                 <Row label="ID" value="Verified at sign-up" />
-                <Row label="Medical card" value="Not on file" action="Add" />
               </dl>
             </section>
 
             <section aria-labelledby="orders">
               <h2 id="orders" className="display mb-4 text-[30px]">Past orders</h2>
               <ul>
-                {MEMBER.pastOrders.map((o) => (
+                {PAST_ORDERS.map((o) => (
                   <li key={o.id} className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 border-t border-[var(--color-hairline)] py-5">
                     <p className="font-medium">{o.items.join(", ")}</p>
                     <p className="num row-span-2 text-right text-[22px] text-[var(--color-brass)]">{money(o.total)}</p>
@@ -56,7 +62,7 @@ export default function Account() {
                       {o.date} · {o.id} · Delivered
                     </p>
                     <div className="col-span-2 mt-2 flex gap-5">
-                      <Link href="/shop" className="btn-text text-[14px]">Reorder</Link>
+                      <ReorderButton lines={o.lines} />
                       <Link href={`/orders/${o.id}`} className="btn-text text-[14px] text-[var(--color-muted)]">Details</Link>
                     </div>
                   </li>

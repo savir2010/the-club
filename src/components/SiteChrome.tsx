@@ -45,7 +45,7 @@ export function SiteFooter({ compact = false }: { compact?: boolean }) {
       <div
         className={`container-club flex flex-col gap-3 text-[13px] text-[var(--color-muted)] sm:flex-row sm:items-center sm:justify-between ${compact ? "py-5" : "py-10"}`}
       >
-        <p>21+ or 18+ with a valid Arizona medical marijuana card. Demo only.</p>
+        <p>Members must be 21 or older. Demo only.</p>
         <p className="text-[var(--color-faint)]">The Club · Phoenix, Arizona</p>
       </div>
     </footer>

@@ -1,8 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { CATEGORIES, MEMBER, MEMBER_SAVE_PCT, PERSONA, PRODUCTS, type Product } from "@/lib/data";
+import { Check, ChevronRight, MessageCircle, Repeat } from "lucide-react";
+import {
+  BOX, CATEGORIES, MEMBER, MEMBER_SAVE_PCT, MEMBER_SAVED, PAST_ORDERS, PERSONA, PRODUCTS, USUAL, WEEKLY_PICKS,
+  byId, money, type Product,
+} from "@/lib/data";
+import { BoxMeter } from "@/components/cart";
 import { useSession } from "@/lib/session";
 import { NoraAvatar } from "@/components/brand";
 import { ProductArt } from "@/components/ProductArt";
@@ -31,6 +36,146 @@ function Rail({ id, title, note, href, items }: { id: string; title: string; not
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+const shell = "flex flex-col rounded-[18px] p-5 sm:p-6";
+const panel = `${shell} bg-[var(--color-raised)] ring-1 ring-[var(--color-hairline)]`;
+const eyebrow = "text-[12px] font-semibold tracking-[0.08em] text-[var(--color-brass)] uppercase";
+
+function Thumb({ id }: { id: string }) {
+  const p = byId(id);
+  return (
+    <span className="size-12 shrink-0 overflow-hidden rounded-[10px] bg-white ring-1 ring-[var(--color-hairline)]">
+      <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
+    </span>
+  );
+}
+
+/** Members: the usual in one tap, this week's picks from Nora, and what the membership has saved them. */
+function ForYou() {
+  const { add, setCartOpen } = useShop();
+  const [texting, setTexting] = useState(false);
+  const [sent, setSent] = useState<"idle" | "busy" | "sent" | string>("idle");
+
+  useEffect(() => {
+    fetch("/api/nora/sms/info", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setTexting(!!d.texting))
+      .catch(() => {});
+  }, []);
+
+  const addAll = (ls: { id: string; qty: number }[]) => {
+    ls.forEach((l) => add(l.id, l.qty, false));
+    setCartOpen(true);
+  };
+
+  const textPicks = async () => {
+    setSent("busy");
+    try {
+      const r = await fetch("/api/nora/sms/weekly", { method: "POST" });
+      const d = await r.json();
+      setSent(r.ok ? "sent" : d.message || "Couldn't text right now.");
+    } catch {
+      setSent("Couldn't text right now.");
+    }
+  };
+
+  return (
+    <section aria-label={`For ${MEMBER.first}`} className="mt-6 grid gap-4 lg:grid-cols-[1fr_1.35fr_0.85fr]">
+      <div className={panel} data-usual>
+        <p className={eyebrow}>Your usual</p>
+        <ul className="mt-4 space-y-3">
+          {USUAL.lines.map((l) => (
+            <li key={l.id} className="flex items-center gap-3">
+              <Thumb id={l.id} />
+              <span className="min-w-0">
+                <span className="block truncate text-[14px] font-medium">{byId(l.id).name}</span>
+                <span className="tnum block text-[12px] text-[var(--color-muted)]">
+                  {l.qty > 1 ? `${l.qty} × ` : ""}{money(byId(l.id).member_price)}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-[13px] text-[var(--color-muted)]">Last ordered {USUAL.date}</p>
+        <div className="mt-auto pt-4">
+          <button className="btn btn-primary w-full rounded-full" onClick={() => addAll(USUAL.lines)} data-reorder>
+            <Repeat size={15} aria-hidden /> Reorder · {money(USUAL.total)}
+          </button>
+          <p className="mt-2.5 text-center text-[12px] text-[var(--color-muted)]">
+            Or text {PERSONA.name} &ldquo;the usual, tonight&rdquo;
+          </p>
+        </div>
+      </div>
+
+      <div className={panel} data-weekly>
+        <div className="flex items-center gap-3">
+          <NoraAvatar size={34} />
+          <div>
+            <p className={eyebrow}>This week from {PERSONA.name}</p>
+            <p className="text-[13px] text-[var(--color-muted)]">Chosen for you, from what you like</p>
+          </div>
+        </div>
+        <ul className="mt-4 space-y-3.5">
+          {WEEKLY_PICKS.map((w) => {
+            const p = byId(w.id);
+            return (
+              <li key={w.id} className="flex gap-3">
+                <Thumb id={w.id} />
+                <span className="min-w-0 flex-1">
+                  <Link href={`/shop/${p.id}`} className="block text-[14px] font-medium hover:text-[var(--color-brass)]">
+                    {p.name} <span className="tnum font-normal text-[var(--color-muted)]">· {money(p.member_price)}</span>
+                  </Link>
+                  <span className="mt-0.5 block text-[13px] leading-snug text-[var(--color-ivory)]/80">{w.reason}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="mt-auto flex flex-wrap items-center gap-2.5 pt-4">
+          <button className="btn btn-sm btn-outline rounded-full" onClick={() => addAll(WEEKLY_PICKS.map((w) => ({ id: w.id, qty: 1 })))}>
+            Add both
+          </button>
+          {texting && (
+            <button className="btn btn-sm btn-outline rounded-full" onClick={textPicks} disabled={sent === "busy" || sent === "sent"} data-text-picks>
+              {sent === "sent" ? <><Check size={14} className="text-[var(--color-brass)]" aria-hidden /> Sent to your phone</> : <><MessageCircle size={14} aria-hidden /> Text me these</>}
+            </button>
+          )}
+          {sent !== "idle" && sent !== "busy" && sent !== "sent" && <p className="w-full text-[12px] text-[var(--color-clay)]">{sent}</p>}
+        </div>
+      </div>
+
+      <div className={`${shell} bg-[#17130f] text-[#f3ece0]`} data-saved>
+        <p className="text-[12px] font-semibold tracking-[0.08em] text-[#e6c992] uppercase">Your membership</p>
+        <p className="num mt-5 text-[44px] leading-none text-[#e6c992]">{money(MEMBER_SAVED)}</p>
+        <p className="mt-2 text-[14px] leading-snug text-[#d8cdb9]">
+          saved since {MEMBER.since.split(" ")[0]}, across {PAST_ORDERS.length} orders. Delivery was free every time.
+        </p>
+        <Link href="/account" className="mt-auto pt-5 text-[13px] text-[#e6c992] underline decoration-[#e6c992]/40 underline-offset-4">
+          See your orders
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/** The Box: any three items, an extra discount. Fills as the cart does. */
+function BoxBand() {
+  const { lines } = useShop();
+  return (
+    <section aria-labelledby="the-box" className="grid items-center gap-5 rounded-[18px] bg-[var(--color-raised)] px-6 py-6 ring-1 ring-[var(--color-hairline)] md:grid-cols-[1fr_minmax(300px,380px)] sm:px-8">
+      <div>
+        <p className={eyebrow}>The Box</p>
+        <h2 id="the-box" className="display mt-2 text-[26px] leading-tight sm:text-[30px]">
+          Any {BOX.size} items, {BOX.pct}% off.
+        </h2>
+        <p className="mt-2 max-w-[52ch] text-[14px] leading-relaxed text-[var(--color-muted)]">
+          Mix flower, vapes, edibles, anything on the shelf. Members already pay {MEMBER_SAVE_PCT}% less; a full box takes another {BOX.pct}% off the order.
+        </p>
+      </div>
+      <BoxMeter lines={lines} className="bg-[var(--color-canvas)]" />
     </section>
   );
 }
@@ -103,6 +248,8 @@ export function Storefront() {
         </div>
       </section>
 
+      {member && <ForYou />}
+
       {/* Departments */}
       <section aria-labelledby="departments" className="mt-6">
         <h2 id="departments" className="sr-only">Shop by department</h2>
@@ -130,6 +277,7 @@ export function Storefront() {
       </section>
 
       <div className="mt-6 space-y-6">
+        <BoxBand />
         <div id="best" className="scroll-mt-32">
           <Rail id="rail-best" title="Best sellers" note="Most ordered by members this month" items={best} />
         </div>

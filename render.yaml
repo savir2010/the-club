@@ -1,0 +1,19 @@
+# Render Blueprint: Nora's agent (agent/main.py) on Render's free plan.
+# Render > New > Blueprint > pick this repo. It asks for ANTHROPIC_KEY and generates NORA_AGENT_SECRET.
+# Texting (iMessage) is not hosted: it needs the Mac, so NORA_SMS_BRIDGE stays unset here.
+services:
+  - type: web
+    name: nora-agent
+    runtime: python
+    plan: free
+    buildCommand: pip install -r agent/requirements.txt
+    startCommand: cd agent && uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: ANTHROPIC_KEY
+        sync: false # Render asks for it during setup; it never goes in the repo
+      - key: NORA_AGENT_SECRET
+        generateValue: true # copy this value into Vercel too

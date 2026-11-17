@@ -30,6 +30,9 @@ log = logging.getLogger("nora.sms")
 ALLOW = [n.strip() for n in os.getenv("NORA_SMS_ALLOW", "").split(",") if n.strip()]
 NORA_NUMBER = os.getenv("NORA_SMS_NUMBER", "").strip()  # shown on the site: "Text Nora at ..."
 DRY_RUN = os.getenv("NORA_SMS_DRY_RUN", "") == "1"  # print replies instead of texting (for testing)
+# Cart changes from real texts are tagged "sms" and the website announces them. Rehearsal texts
+# (dry run) get a different tag so the website never shows a text that didn't really happen.
+SOURCE = "sms-rehearsal" if DRY_RUN else "sms"
 MAX_REPLIES = int(os.getenv("NORA_SMS_MAX_REPLIES", "60"))  # per bridge run; a runaway stops here
 MAX_REGISTERED = 10
 POLL_SECONDS = 1.5
@@ -180,7 +183,7 @@ def _place_order(plan: dict) -> list[str]:
     path = f"/orders/{oid}?window={quote(f'{day} {window}')}&to={quote(where['label'])}"
     cart_store.order_placed(
         {"id": oid, "items": n, "total": total, "day": day, "window": window, "to": where["label"], "path": path},
-        source="sms",
+        source=SOURCE,
     )
     first = (
         f"Order {oid} is placed: {n} item{'s' if n != 1 else ''}, ${total:.2f} with tax, free delivery. "
@@ -203,6 +206,15 @@ async def _reply(handle: str, text: str) -> None:
     from main import ChatRequest  # imported here: main imports this module
 
     thread = state["threads"].setdefault(handle, {"history": []})
+    sent_first = thread.pop("sent_first", None)  # a text Nora sent first (weekly picks), so "1" or "2" makes sense
+    if sent_first:
+        text = f"(Earlier you texted them first: {sent_first}) {text}"
+    if state["public_url"]:
+        # Links aren't typed by Nora: show_products sends one tappable link (with photo) per pick.
+        text = (
+            "(Product links work by text: every show_products pick is followed by its own link with a photo. "
+            "If they ask for links, call show_products with the items they mean; don't type URLs yourself.) " + text
+        )
     req = ChatRequest(
         history=_trimmed(thread["history"]),
         message=text[:2000], channel="phone", cart=cart_store.lines(), account="member",
@@ -232,7 +244,7 @@ async def _reply(handle: str, text: str) -> None:
             await flush()
             picks[:] = e["picks"]
         elif t == "cart":
-            cart_store.apply(e["op"], e["id"], e.get("qty", 0), source="sms")  # the website sees it within a second
+            cart_store.apply(e["op"], e["id"], e.get("qty", 0), source=SOURCE)  # the website sees it within a second
         elif t == "checkout" and e.get("pay"):
             order_plan = e
         elif t == "error":
@@ -321,6 +333,27 @@ def reset() -> dict:
     state["outbox"] = []
     cart_store.reset()
     return status()
+
+
+async def send_weekly() -> dict:
+    """Nora texts this week's picks to every registered number (the Friday routine, on demand)."""
+    if not state["active"]:
+        raise RuntimeError("Texting isn't on.")
+    handles = state["registered"] or ALLOW
+    if not handles:
+        raise RuntimeError("No phone number is registered yet. Join with your mobile first.")
+    member = config.load("member.json")
+    picks = member.get("weekly_picks", [])
+    names = ", ".join(f"{i}. {shop.BY_ID[p['id']]['name']} (id {p['id']})" for i, p in enumerate(picks, 1))
+    for handle in handles[-3:]:
+        await _say(handle, f"Hi {member['first']}, it's {config.load('persona.json')['name']}. Here are my picks for you this week:")
+        for b in _picks_bubbles(picks):
+            await _say(handle, b)
+        await _say(handle, 'Reply 1 or 2 and I\'ll add it to your cart. Or text "the usual" and I\'ll set up your last order.')
+        state["threads"].setdefault(handle, {"history": []})["sent_first"] = (
+            f"this week's picks, numbered {names}; and an offer to set up the usual."
+        )
+    return {"ok": True, "sent_to": len(handles[-3:])}
 
 
 def inject(handle: str, text: str) -> None:

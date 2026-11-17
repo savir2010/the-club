@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, Landmark, Lock, MapPin, Repeat } from "lucide-react";
-import { ADDRESSES, DELIVERY_SLOTS, MEMBER, MEMBER_SAVE_PCT, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
+import { ADDRESSES, BOX, DELIVERY_SLOTS, MEMBER, MEMBER_SAVE_PCT, PERSONA, TAX_RATE, byId, money } from "@/lib/data";
 import { Monogram, NoraAvatar, Wordmark } from "@/components/brand";
 import { useSession } from "@/lib/session";
 import { useShop } from "@/components/shop/ShopState";
 import { MembershipFlow } from "@/components/membership/MembershipFlow";
 import { useNoraPointer } from "@/components/NoraPointer";
 import { ProductArt } from "@/components/ProductArt";
-import { LinePrice, Stepper, totals } from "@/components/cart";
+import { LinePrice, SavingsBreakdown, Stepper, totals } from "@/components/cart";
 import { SiteFooter } from "@/components/SiteChrome";
 import { ThemeSync } from "@/components/shop/ThemeToggle";
 
@@ -111,10 +111,8 @@ function GateSummary({ joined = false }: { joined?: boolean }) {
             </dt>
             <dd className="num text-[30px] leading-none">{money(t.member)}</dd>
           </div>
-          {t.savings > 0 && (
-            <p className="text-right text-[13px] text-[var(--color-brass)]">{joined ? `Applied · you save ${money(t.savings)} (${MEMBER_SAVE_PCT}%)` : `Join and save ${money(t.savings)}, ${MEMBER_SAVE_PCT}% off`}</p>
-          )}
         </dl>
+        <SavingsBreakdown lines={lines} pitch={!joined} className="mt-5" />
         <p className="mt-6 rounded-[10px] bg-[var(--color-canvas)] p-3.5 text-[13px] leading-relaxed text-[var(--color-muted)]">
           {joined ? "Next, choose where and when it arrives. Tax and tip are added there." : "Finish joining to choose a delivery window and pay. Tax and tip are added on the next step."}
         </p>
@@ -459,14 +457,11 @@ export default function Checkout() {
                   <dd className="tnum text-[var(--color-muted)] line-through">{money(t.retail)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt>Member savings</dt>
-                  <dd className="tnum text-[var(--color-brass)]">−{money(t.savings)}</dd>
-                </div>
-                <div className="flex justify-between">
                   <dt>Delivery</dt>
                   <dd>Free</dd>
                 </div>
               </dl>
+              <SavingsBreakdown lines={lines} className="mt-4" />
 
               <fieldset className="mt-6 border-t border-[var(--color-hairline)] pt-5">
                 <legend className="flex w-full items-baseline justify-between text-[15px]">
