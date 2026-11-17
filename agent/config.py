@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 AGENT_DIR = Path(__file__).resolve().parent
 APP_DIR = AGENT_DIR.parent
-DATA_DIR = APP_DIR / "data"
+DATA_DIR = AGENT_DIR / "data"  # inside agent/ so the agent deploys on its own
 
 # First file wins for each variable; real environment variables beat all of them.
 for env_file in (AGENT_DIR / ".env", APP_DIR / ".env.local", APP_DIR / ".env", APP_DIR.parent / ".env"):
