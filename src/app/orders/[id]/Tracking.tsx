@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, Check, IdCard, Pencil } from "lucide-react";
+import Link from "next/link";
+import { BadgeCheck, Check, ChevronRight, FileCheck2, IdCard, Pencil } from "lucide-react";
 import { ADDRESSES, money } from "@/lib/data";
 import { SiteFooter } from "@/components/SiteChrome";
 import { ShopHeader } from "@/components/shop/ShopHeader";
 import { ThemeSync } from "@/components/shop/ThemeToggle";
+import { buildTrip, fallbackOrder, loadOrder, type Trip } from "@/lib/trip";
 
 const STEPS = ["Confirmed", "Packed", "Out for delivery", "Delivered"] as const;
 
@@ -36,6 +38,10 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
   const [progress, setProgress] = useState(0);
   const [tip, setTip] = useState(initialTip);
   const [editing, setEditing] = useState(false);
+  // The trip report for this order (driver and vehicle are drawn at random per order).
+  const [trip, setTrip] = useState<Trip | null>(null);
+  useEffect(() => setTrip(buildTrip(loadOrder(id) ?? fallbackOrder(id))), [id]);
+  const driverFirst = trip ? trip.driver.name.split(" ")[0] : "Your driver";
 
   // Scripted: Confirmed → Packed → Out for delivery, then the car moves
   useEffect(() => {
@@ -131,10 +137,10 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
             <div className="rounded-[var(--radius-panel)] border border-[var(--color-hairline)] bg-[var(--color-raised)] p-6">
               <div className="flex items-center gap-4">
                 <div className="grid size-16 place-items-center rounded-full bg-[var(--color-raised-2)] ring-1 ring-[var(--color-hairline-strong)]">
-                  <span className="display text-[26px] text-[var(--color-muted)]">M</span>
+                  <span className="display text-[26px] text-[var(--color-muted)]">{driverFirst[0]}</span>
                 </div>
                 <div>
-                  <p className="display text-[28px] leading-none">Marco</p>
+                  <p className="display text-[28px] leading-none">{driverFirst}</p>
                   <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-[var(--color-ivory)]">
                     <BadgeCheck size={16} strokeWidth={1.5} className="text-[var(--color-brass)]" aria-hidden />
                     Licensed delivery agent
@@ -148,7 +154,7 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
                 </div>
                 <div>
                   <dt className="text-[12px] text-[var(--color-muted)]">Vehicle</dt>
-                  <dd className="mt-1 text-[15px]">Gray sedan</dd>
+                  <dd className="mt-1 text-[15px] leading-snug">{trip ? `${trip.vehicle.color} ${trip.vehicle.make} ${trip.vehicle.model}` : "…"}</dd>
                 </div>
               </dl>
               <p className="mt-5 flex items-start gap-2.5 rounded-[10px] bg-[var(--color-canvas)] p-3.5 text-[14px]">
@@ -158,7 +164,7 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
 
               <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[15px]">Tip for Marco</p>
+                  <p className="text-[15px]">Tip for {driverFirst}</p>
                   {!editing && (
                     <button className="btn-text inline-flex items-center gap-1 text-[14px]" onClick={() => setEditing(true)}>
                       <Pencil size={13} aria-hidden /> {money(tip)}
@@ -185,6 +191,23 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
               </div>
             </div>
 
+            {trip && (
+              <Link
+                href={`/orders/${id}/trip`}
+                className="group flex items-center gap-4 rounded-[var(--radius-panel)] border border-[var(--color-hairline)] bg-[var(--color-raised)] p-5 transition-colors hover:border-[var(--color-brass)]/50"
+              >
+                <span className="grid size-11 shrink-0 place-items-center rounded-[10px] bg-[var(--color-brass)]/12 text-[var(--color-brass)]">
+                  <FileCheck2 size={20} strokeWidth={1.5} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-medium">Delivery trip report</span>
+                  <span className="tnum mt-0.5 block text-[13px] text-[var(--color-muted)]">
+                    {trip.tripId} · {trip.checks.filter((c) => c.status === "pass").length} of {trip.checks.length} checks passed
+                  </span>
+                </span>
+                <ChevronRight size={18} className="text-[var(--color-muted)] transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </Link>
+            )}
           </aside>
         </div>
       </main>

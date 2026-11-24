@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, Landmark, Lock, MapPin, Repeat } from "lucide-react";
 import { ADDRESSES, DELIVERY_SLOTS, MEMBER, PERSONA, SUBSCRIBE, TAX_RATE, byId, everyLabel, money, subscribePct } from "@/lib/data";
 import { isoIn, longDate, useSubscriptions } from "@/lib/subscriptions";
+import { newOrderId, saveOrder } from "@/lib/trip";
 import { Monogram, NoraAvatar, Wordmark } from "@/components/brand";
 import { useSession } from "@/lib/session";
 import { useShop } from "@/components/shop/ShopState";
@@ -543,7 +544,21 @@ export default function Checkout() {
                   setPlacing(true);
                   if (subWeeks) subs.add(lines.map((l) => ({ id: l.id, qty: l.qty })), subWeeks, isoIn(subWeeks * 7));
                   const where = ADDRESSES.find((a) => a.id === address)?.label ?? "";
-                  setTimeout(() => router.push(`/orders/CL-20512?tip=${tipAmt.toFixed(2)}&window=${encodeURIComponent(`${day} ${slot}`)}&to=${encodeURIComponent(where)}`), 700);
+                  // Each order gets its own id and a saved snapshot; the delivery trip report is built from it.
+                  const id = newOrderId();
+                  saveOrder({
+                    id,
+                    placedAt: new Date().toISOString(),
+                    day,
+                    slot,
+                    addressId: address,
+                    lines: lines.map((l) => ({ id: l.id, qty: l.qty })),
+                    charged: Math.round(due * 100) / 100,
+                    tax,
+                    tip: tipAmt,
+                    total: Math.round(total * 100) / 100,
+                  });
+                  setTimeout(() => router.push(`/orders/${id}?tip=${tipAmt.toFixed(2)}&window=${encodeURIComponent(`${day} ${slot}`)}&to=${encodeURIComponent(where)}`), 700);
                 }}
               >
                 {placing ? (

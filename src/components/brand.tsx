@@ -1,11 +1,12 @@
 import Link from "next/link";
 
-export function Monogram({ size = 36 }: { size?: number }) {
+/** `plain` drops the letter and keeps just the rings (used on formal documents like the trip report). */
+export function Monogram({ size = 36, plain = false }: { size?: number; plain?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden>
       <circle cx="20" cy="20" r="19" fill="none" stroke="var(--color-brass)" strokeWidth="1" />
       <circle cx="20" cy="20" r="16" fill="none" stroke="var(--color-brass)" strokeWidth="0.5" opacity="0.5" />
-      <text
+      {!plain && <text
         x="20"
         y="27"
         textAnchor="middle"
@@ -15,7 +16,7 @@ export function Monogram({ size = 36 }: { size?: number }) {
         fill="var(--color-ivory)"
       >
         C
-      </text>
+      </text>}
     </svg>
   );
 }

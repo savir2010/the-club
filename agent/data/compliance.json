@@ -1,0 +1,188 @@
+{
+  "_note": "Delivery compliance settings for the trip report. DEMO values: the premises, license and fleet are fictional, and the rule text paraphrases the client's research summary. Have Arizona regulatory counsel confirm against the current ADHS rules before any real use.",
+  "license_type": "Adult-use marijuana establishment",
+  "rule_set": "A.A.C. Title 9, Ch. 18 (adult-use)",
+  "premises": {
+    "name": "The Club, licensed premises (demo)",
+    "license": "AZ-ME-DEMO-0042",
+    "address": "2250 E Copper Way, Phoenix, AZ 85034",
+    "inspection_contact": "Compliance desk, (602) 555-0100"
+  },
+  "max_vehicle_retail_value": 10000,
+  "inspection_window_hours": 2,
+  "records_retention_note": "Kept with the dispensary's transportation records and available to ADHS on request.",
+  "fleet": [
+    {
+      "unit": "V-01",
+      "year": 2023,
+      "make": "Toyota",
+      "model": "Camry SE",
+      "color": "Gray",
+      "plate": "CVX4821",
+      "vin6": "418263"
+    },
+    {
+      "unit": "V-02",
+      "year": 2022,
+      "make": "Honda",
+      "model": "Accord EX",
+      "color": "Silver",
+      "plate": "PLM7730",
+      "vin6": "905114"
+    },
+    {
+      "unit": "V-03",
+      "year": 2024,
+      "make": "Hyundai",
+      "model": "Sonata SEL",
+      "color": "Black",
+      "plate": "RTD2196",
+      "vin6": "331870"
+    },
+    {
+      "unit": "V-04",
+      "year": 2023,
+      "make": "Kia",
+      "model": "K5 LXS",
+      "color": "White",
+      "plate": "BHK5604",
+      "vin6": "672049"
+    },
+    {
+      "unit": "V-05",
+      "year": 2022,
+      "make": "Subaru",
+      "model": "Outback Premium",
+      "color": "Green",
+      "plate": "NZA3378",
+      "vin6": "150926"
+    },
+    {
+      "unit": "V-06",
+      "year": 2024,
+      "make": "Toyota",
+      "model": "Prius LE",
+      "color": "Blue",
+      "plate": "WEJ8142",
+      "vin6": "287315"
+    },
+    {
+      "unit": "V-07",
+      "year": 2023,
+      "make": "Nissan",
+      "model": "Altima SV",
+      "color": "Gray",
+      "plate": "GYF6059",
+      "vin6": "764402"
+    },
+    {
+      "unit": "V-08",
+      "year": 2024,
+      "make": "Ford",
+      "model": "Escape Hybrid",
+      "color": "White",
+      "plate": "KQS1287",
+      "vin6": "509638"
+    }
+  ],
+  "drivers": {
+    "_note": "Fictional names, combined at random for each trip.",
+    "first": [
+      "Marco",
+      "Alicia",
+      "Jordan",
+      "Priya",
+      "Desmond",
+      "Lena",
+      "Tomás",
+      "Grace",
+      "Andre",
+      "Mei",
+      "Caleb",
+      "Rosa",
+      "Imani",
+      "Felix",
+      "Nadia",
+      "Owen",
+      "Lucia",
+      "Theo",
+      "Sana",
+      "Elias"
+    ],
+    "last": [
+      "Alvarez",
+      "Brennan",
+      "Castillo",
+      "Duarte",
+      "Ellison",
+      "Fujita",
+      "Garza",
+      "Holloway",
+      "Ibarra",
+      "Jansen",
+      "Kowalski",
+      "Lindqvist",
+      "Moreno",
+      "Nakamura",
+      "Okafor",
+      "Padilla",
+      "Quinlan",
+      "Reyes",
+      "Sorensen",
+      "Treviño"
+    ]
+  },
+  "references": [
+    {
+      "cite": "A.A.C. R9-18-312.01",
+      "subject": "Adult-use delivery to consumers: vehicle register, daily usage records, order copy attached to the trip plan, retail-value limit, inspection within two hours"
+    },
+    {
+      "cite": "A.A.C. R9-18-312",
+      "subject": "Adult-use security requirements, including the trip plan in subsection (D)(1)"
+    },
+    {
+      "cite": "A.A.C. R9-17-318",
+      "subject": "Medical marijuana security and transportation (not applied: this is an adult-use order)"
+    },
+    {
+      "cite": "A.R.S. § 36-2854",
+      "subject": "Adult-use regulatory authority"
+    }
+  ],
+  "sections": {
+    "_note": "Margin notes on the trip report: the rule each section answers to and why it is there. Paraphrased from the client's research summary; counsel to confirm wording.",
+    "trip_plan": {
+      "cite": "A.A.C. R9-18-312(D)(1)",
+      "why": "The adult-use security rule refers to a trip plan for each transport. R9-18-312.01 ties consumer delivery to it. The plan records the delivery agent, departure, anticipated route and return, and is updated after the trip."
+    },
+    "register": {
+      "cite": "A.A.C. R9-18-312.01(A)",
+      "why": "A dispensary delivering to consumers must keep a register of its delivery vehicles that identifies each one by make, model and license plate. The vehicle used for this trip is marked."
+    },
+    "usage": {
+      "cite": "A.A.C. R9-18-312.01(A)",
+      "why": "Daily vehicle usage records are required: the date, the usage period and the retail value of regulated products carried on each trip. This trip is added to today's record for the vehicle."
+    },
+    "order": {
+      "cite": "A.A.C. R9-18-312.01, R9-18-312(D)(1)",
+      "why": "A copy of the consumer's order must be attached to the trip plan. Retail value is shown because the usage record and the vehicle limit are measured at retail, not at the price charged."
+    },
+    "limit": {
+      "cite": "A.A.C. R9-18-312.01",
+      "why": "The adult-use delivery rule limits the aggregate retail value of products in a vehicle for consumer delivery. The limit is checked when the trip is planned, and the trip is held if it would go over."
+    },
+    "checks": {
+      "cite": "A.A.C. R9-18-312, R9-18-312.01(A)",
+      "why": "Vehicle tracking, surveillance and recording, and secured storage come from the security requirements. The vehicle must also be available for ADHS inspection within two hours of a request."
+    },
+    "custody": {
+      "cite": "Internal control",
+      "why": "Not a separately cited requirement. Records who held the products at each hand-off, which supports the inspection accountability the transport rules are meant to provide."
+    },
+    "references": {
+      "cite": "A.R.S. § 36-2854",
+      "why": "The statute that gives ADHS authority to make the adult-use rules above. Medical rules (R9-17-318) are listed for completeness and are not applied to this adult-use order."
+    }
+  }
+}
