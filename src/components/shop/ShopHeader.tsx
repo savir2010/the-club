@@ -10,7 +10,6 @@ import { NoraAvatar, Wordmark } from "@/components/brand";
 import { totals } from "@/components/cart";
 import { useShop } from "./ShopState";
 import { ThemeToggle } from "./ThemeToggle";
-import { CallRepButton } from "@/components/CallRepButton";
 import { ClubSeal } from "./Price";
 
 /** The store's top bar, used on every shopping and account page. */
@@ -212,7 +211,6 @@ function Header() {
         <Wordmark href="/shop" className="justify-self-center" />
 
         <nav aria-label="Account" className="flex items-center justify-end gap-1 sm:gap-3">
-          <CallRepButton />
           <ThemeToggle />
           <AccountMenu />
           <Link href={signedIn ? "/account#orders" : "/signin?next=/account"} className="nav-link smallcaps hidden px-1 xl:inline-flex">

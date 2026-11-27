@@ -23,6 +23,9 @@
   --color-muted: #5f5950;
   --color-faint: #716a60;
   --color-brass: #111111;
+  /* Copper: the one vivid colour, kept for "Speak to someone" (white text on it is 5.0:1) */
+  --color-copper: #b4532a;
+  --color-copper-deep: #93421f;
   --color-brass-hi: #242424;
   --color-brass-lo: #111111;
   --color-light: #f3f0e9;
@@ -615,6 +618,21 @@ html.reveal-ready .reveal-pending.is-in [data-reveal-child] { opacity: 1; transf
 @media (max-width: 639px) { .chat-window { transform-origin: 50% 100%; } }
 .chat-part { animation: chat-part 420ms var(--ease-out) both; }
 .avatar-pop { animation: avatar-pop 520ms cubic-bezier(0.34, 1.4, 0.64, 1) 140ms both; }
+/* "Speak to someone": copper ring that pulses out now and then, so a real person is easy to find */
+.call-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--color-copper);
+  pointer-events: none;
+  animation: call-ring 3.4s var(--ease-out) 1.6s infinite both;
+}
+@media (max-width: 639px) { .call-ring::before { border-radius: 999px; } }
+@keyframes call-ring {
+  0% { transform: scale(1); opacity: 0.7; }
+  45%, 100% { transform: scale(1.18, 1.35); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .call-ring::before { animation: none; opacity: 0; } }
 .launcher-ring::before {
   content: "";
   position: absolute;

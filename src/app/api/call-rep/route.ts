@@ -24,6 +24,8 @@ export async function POST() {
   if (Date.now() - lastCall < COOLDOWN_MS) {
     return Response.json({ ok: true, message: "A representative is already being called." });
   }
+  // claim the slot before Twilio answers (about 2s), so a second tap meanwhile can't ring twice
+  lastCall = Date.now();
   try {
     const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Calls.json`, {
       method: "POST",
@@ -36,11 +38,12 @@ export async function POST() {
     if (!r.ok) {
       const detail = (await r.json().catch(() => ({}))) as { message?: string };
       console.error("Twilio call failed", r.status, detail.message);
+      lastCall = 0;
       return Response.json({ ok: false, message: "The call couldn't be placed. Try again shortly." }, { status: 502 });
     }
-    lastCall = Date.now();
     return Response.json({ ok: true, message: "A representative is being called." });
   } catch {
+    lastCall = 0;
     return Response.json({ ok: false, message: "The call couldn't be placed. Try again shortly." }, { status: 502 });
   }
 }
