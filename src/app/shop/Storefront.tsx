@@ -210,7 +210,7 @@ function NoraBoxPlate() {
     setCartOpen(true);
   };
   return (
-    <figure className="relative min-h-[420px] overflow-hidden sm:min-h-[560px]">
+    <figure className="relative min-h-[440px] overflow-hidden sm:min-h-[600px]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/img/hero/nora-box.webp"
@@ -293,7 +293,8 @@ export function Storefront() {
           runs to the right edge of the screen; the words stay on the page's 1600px column. */}
       <section className="nora-hero">
         <div className="grid items-stretch lg:grid-cols-[1.1fr_1fr]">
-          <div className="flex flex-col justify-center px-5 py-16 sm:px-12 sm:py-24 lg:pr-16 lg:pl-[max(4rem,calc(50vw-800px+4rem))] xl:pr-24 xl:pl-[max(6rem,calc(50vw-800px+6rem))]">
+          {/* the same height signed in or out: sized for the guest copy, which runs a line longer */}
+          <div className="flex min-h-[560px] flex-col justify-center px-5 py-16 sm:min-h-[670px] sm:px-12 sm:py-24 lg:min-h-[720px] lg:pr-16 lg:pl-[max(4rem,calc(50vw-800px+4rem))] xl:pr-24 xl:pl-[max(6rem,calc(50vw-800px+6rem))]">
             <p className="flex animate-[fade-in_900ms_var(--ease-out)_both] items-center gap-2.5 text-[12px] text-[var(--color-muted)]">
               <ClubSeal /> {member ? `Member prices are on · you save ${MEMBER_SAVE_PCT}%` : `Open to browse · members save ${MEMBER_SAVE_PCT}%`}
             </p>
