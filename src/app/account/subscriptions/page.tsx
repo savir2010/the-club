@@ -26,7 +26,7 @@ export default function Subscriptions() {
       <ShopHeader />
       <SignedInOnly>
         <main className="container-club pt-12 pb-24">
-          <p className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.1em] text-[var(--color-brass)] uppercase">
+          <p className="flex items-center gap-2 text-[13px] font-medium tracking-[0.1em] text-[var(--color-brass)] uppercase">
             <Repeat size={15} aria-hidden /> Subscribe &amp; Save
           </p>
           <h1 className="display mt-2 text-[44px] sm:text-[52px]">Your subscriptions</h1>
@@ -35,7 +35,7 @@ export default function Subscriptions() {
           </p>
 
           {/* the rate, and how to reach the higher one */}
-          <div data-subscribe-rate className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[16px] bg-[var(--color-brass)]/[0.09] px-5 py-4 ring-1 ring-[var(--color-brass)]/30">
+          <div data-subscribe-rate className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-none bg-[var(--color-brass)]/[0.09] px-5 py-4 ring-1 ring-[var(--color-brass)]/30">
             <p className="num text-[40px] leading-none text-[var(--color-brass)]">{pct}%</p>
             <div className="min-w-[220px] flex-1">
               <p className="font-medium">{toMulti ? `You're saving ${pct}% on every subscribed delivery` : `You've unlocked ${SUBSCRIBE.pct_multi}% off`}</p>
@@ -47,7 +47,7 @@ export default function Subscriptions() {
             </div>
             <div className="flex gap-1.5" aria-hidden>
               {Array.from({ length: SUBSCRIBE.multi_at }, (_, i) => (
-                <span key={i} className={`h-2 w-8 rounded-full ${i < subs.length ? "bg-[var(--color-brass)]" : "bg-[var(--color-brass)]/20"}`} />
+                <span key={i} className={`h-px w-8 ${i < subs.length ? "bg-[var(--color-brass)]" : "bg-[var(--color-brass)]/20"}`} />
               ))}
             </div>
           </div>
@@ -59,7 +59,7 @@ export default function Subscriptions() {
                 <div className="mt-5 rounded-[var(--radius-panel)] border border-dashed border-[var(--color-hairline-strong)] p-8 text-center">
                   <p className="text-[17px] font-medium">No subscriptions yet</p>
                   <p className="mt-1 text-[14px] text-[var(--color-muted)]">Choose Subscribe &amp; Save on any product, or switch it on at checkout.</p>
-                  <Link href="/shop" className="btn btn-primary mt-5 rounded-full">Browse the shop</Link>
+                  <Link href="/shop" className="btn btn-primary mt-5">Browse the shop</Link>
                 </div>
               ) : (
                 dates.map((d) => {
@@ -95,9 +95,9 @@ export default function Subscriptions() {
                 <p className="mt-3 text-[14px] text-[var(--color-muted)]">We&rsquo;ll text you two days before. Delivery is always free.</p>
                 <dl className="mt-6 space-y-2 border-t border-[var(--color-hairline)] pt-4 text-[14px]">
                   <div className="flex justify-between"><dt className="text-[var(--color-muted)]">Subscriptions</dt><dd className="tnum">{subs.length}</dd></div>
-                  <div className="flex justify-between"><dt className="text-[var(--color-muted)]">Your rate</dt><dd className="tnum font-semibold text-[var(--color-brass)]">{pct}% off</dd></div>
+                  <div className="flex justify-between"><dt className="text-[var(--color-muted)]">Your rate</dt><dd className="tnum font-medium text-[var(--color-brass)]">{pct}% off</dd></div>
                 </dl>
-                <Link href="/shop" className="btn btn-primary mt-6 w-full rounded-full">Add more items</Link>
+                <Link href="/shop" className="btn btn-primary mt-6 w-full">Add more items</Link>
               </div>
               <Link
                 href={`/shop?ask=${encodeURIComponent("What should I add to my Subscribe & Save?")}`}
@@ -128,7 +128,7 @@ function Row({
   const p = byId(s.id);
   return (
     <li data-subscription={s.id} className="grid grid-cols-[80px_1fr] gap-4 py-5 sm:grid-cols-[96px_1fr_auto] sm:items-center">
-      <Link href={`/shop/${p.id}`} className="aspect-square overflow-hidden rounded-[12px] border border-[var(--color-hairline)] bg-white">
+      <Link href={`/shop/${p.id}`} className="aspect-square overflow-hidden rounded-none border border-[var(--color-hairline)] bg-[var(--color-plate)]">
         <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
       </Link>
       <div className="min-w-0">

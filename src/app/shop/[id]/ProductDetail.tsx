@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronRight, IdCard, MapPin, MessageCircle, Repeat, Truck } from "lucide-react";
+import { Check, IdCard, MapPin, MessageCircle, Repeat, Truck } from "lucide-react";
 import { BoxMeter } from "@/components/cart";
-import { MEMBER, PERSONA, PRODUCTS, SUBSCRIBE, byId, everyLabel, money, subscribePrice, type Product } from "@/lib/data";
+import { MEMBER, PERSONA, PRODUCTS, SUBSCRIBE, byId, everyLabel, money, plateAlt, plateImage, subscribePrice, type Product } from "@/lib/data";
 import { arrives, isoIn, longDate, useSubscriptions } from "@/lib/subscriptions";
 import { ProductArt } from "@/components/ProductArt";
 import { Aurora } from "@/components/Aurora";
@@ -13,7 +13,7 @@ import { NoraAvatar } from "@/components/brand";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { Stars } from "@/components/shop/Stars";
 import { useShop } from "@/components/shop/ShopState";
-import { ClubSeal, Price, ProductPrice } from "@/components/shop/Price";
+import { ClubSeal, ProductPrice } from "@/components/shop/Price";
 import { useSession } from "@/lib/session";
 
 const ONSET: Record<Product["category"], string> = {
@@ -51,17 +51,21 @@ function distribution(r: number) {
 
 function Gallery({ p }: { p: Product }) {
   const [view, setView] = useState(0);
+  const photo = (src: string) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" className="size-full object-cover" />
+  );
   const views = [
-    { label: "Front", node: <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" /> },
-    { label: "Label close-up", node: <ProductArt category={p.category} brand={p.brand} image={p.image} view="close" className="size-full" /> },
+    { label: "Front", node: p.image ? photo(plateImage(p.image)) : <ProductArt category={p.category} brand={p.brand} className="size-full" /> },
+    { label: "Detail", node: p.image ? photo(plateAlt(p)) : <ProductArt category={p.category} brand={p.brand} view="close" className="size-full" /> },
     {
       label: "At a glance",
       node: (
-        <div className="grid size-full place-items-center bg-[var(--color-raised-2)] p-[12%] text-center">
+        <div className="grid size-full place-items-center bg-[var(--color-cream)] p-[12%] text-center">
           <div>
-            <p className="smallcaps text-[var(--color-brass)]">{p.strain_type}</p>
-            <p className="display mt-[6%] text-[clamp(18px,3.2vw,40px)] leading-tight">{p.potency.split(" · ")[0]}</p>
-            <p className="mt-[5%] text-[clamp(11px,1vw,14px)] text-[var(--color-muted)]">{p.format}</p>
+            <p className="smallcaps text-[var(--color-muted)]">{p.strain_type}</p>
+            <p className="display mt-[8%] text-[clamp(22px,4vw,64px)] leading-tight">{p.potency.split(" · ")[0]}</p>
+            <p className="mt-[6%] text-[clamp(11px,1vw,14px)] text-[var(--color-muted)]">{p.format}</p>
           </div>
         </div>
       ),
@@ -71,7 +75,7 @@ function Gallery({ p }: { p: Product }) {
       node: (
         <div className="relative size-full">
           <Aurora />
-          <div className="absolute inset-[22%] overflow-hidden rounded-full shadow-[var(--shadow-float)]">
+          <div className="absolute inset-[20%_24%] overflow-hidden">
             <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
           </div>
         </div>
@@ -79,8 +83,8 @@ function Gallery({ p }: { p: Product }) {
     },
   ];
   return (
-    <div className="flex flex-col-reverse gap-3 self-start sm:flex-row sm:items-start">
-      <div className="flex gap-2 sm:flex-col" role="tablist" aria-label="Product images">
+    <div className="flex flex-col-reverse gap-4 self-start sm:flex-row sm:items-start">
+      <div className="flex gap-2.5 sm:flex-col" role="tablist" aria-label="Product images">
         {views.map((v, i) => (
           <button
             key={v.label}
@@ -89,14 +93,24 @@ function Gallery({ p }: { p: Product }) {
             aria-label={v.label}
             onMouseEnter={() => setView(i)}
             onClick={() => setView(i)}
-            className={`size-16 overflow-hidden rounded-[10px] border-2 transition-colors ${view === i ? "border-[var(--color-brass)]" : "border-[var(--color-hairline)] hover:border-[var(--color-hairline-strong)]"}`}
+            className={`relative aspect-[4/5] w-14 overflow-hidden transition-opacity duration-300 sm:w-16 ${view === i ? "opacity-100" : "opacity-55 hover:opacity-90"}`}
           >
-            <span className="pointer-events-none block size-full [&_p]:!text-[7px] [&_.smallcaps]:hidden">{v.node}</span>
+            <span className="pointer-events-none block size-full [&_p]:!text-[6px] [&_.smallcaps]:hidden">{v.node}</span>
+            <span className={`absolute inset-x-0 bottom-0 h-px bg-[var(--color-ivory)] transition-transform duration-500 ${view === i ? "scale-x-100" : "scale-x-0"}`} aria-hidden />
           </button>
         ))}
       </div>
-      <div className="aspect-square flex-1 overflow-hidden rounded-[var(--radius-panel)] border border-[var(--color-hairline)] bg-[var(--color-raised)]" role="tabpanel" aria-label={views[view].label}>
-        {views[view].node}
+      <div className="relative aspect-[4/5] flex-1 overflow-hidden bg-[var(--color-plate)]" role="tabpanel" aria-label={views[view].label}>
+        {views.map((v, i) => (
+          <div
+            key={v.label}
+            className="absolute inset-0 transition-opacity duration-[480ms] ease-[var(--ease-lux)]"
+            style={{ opacity: view === i ? 1 : 0 }}
+            aria-hidden={view !== i}
+          >
+            {v.node}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -105,8 +119,8 @@ function Gallery({ p }: { p: Product }) {
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <tr className="border-b border-[var(--color-hairline)] last:border-0">
-      <th scope="row" className="w-[38%] py-2.5 pr-4 text-left align-top text-[14px] font-medium">{k}</th>
-      <td className="py-2.5 text-[14px] text-[var(--color-ivory)]/85">{v}</td>
+      <th scope="row" className="smallcaps w-[38%] py-3.5 pr-4 text-left align-top font-normal text-[var(--color-muted)]">{k}</th>
+      <td className="py-3 text-[14px]">{v}</td>
     </tr>
   );
 }
@@ -130,12 +144,12 @@ function BuyOptions({
 
   const option = (value: "once" | "subscribe", children: React.ReactNode) => (
     <label
-      className={`block cursor-pointer rounded-[12px] border p-3.5 transition-colors ${mode === value ? "border-[var(--color-brass)] bg-[var(--color-brass)]/[0.07]" : "border-[var(--color-hairline-strong)] hover:border-[var(--color-ivory)]/35"}`}
+      className={`block cursor-pointer border p-4 transition-colors duration-300 ${mode === value ? "border-[var(--color-ivory)]" : "border-[var(--color-hairline-strong)] hover:border-[var(--color-ivory)]/50"}`}
     >
       <input type="radio" name="purchase" className="peer sr-only" checked={mode === value} onChange={() => { setMode(value); setDone(false); }} />
       <span className="flex items-start gap-3">
-        <span className={`mt-0.5 grid size-[18px] shrink-0 place-items-center rounded-full border-2 ${mode === value ? "border-[var(--color-brass)]" : "border-[var(--color-hairline-strong)]"}`} aria-hidden>
-          {mode === value && <span className="size-2 rounded-full bg-[var(--color-brass)]" />}
+        <span className={`mt-[3px] grid size-[14px] shrink-0 place-items-center rounded-full border ${mode === value ? "border-[var(--color-ivory)]" : "border-[var(--color-hairline-strong)]"}`} aria-hidden>
+          {mode === value && <span className="size-1.5 rounded-full bg-[var(--color-ivory)]" />}
         </span>
         <span className="min-w-0 flex-1">{children}</span>
       </span>
@@ -144,12 +158,12 @@ function BuyOptions({
 
   return (
     <div className="mt-4" data-buy-options>
-      {current && (
-        <p className="mb-3 flex items-start gap-2 rounded-[10px] bg-[var(--color-sage)]/10 px-3 py-2.5 text-[13px]">
+      {member && current && (
+        <p className="mb-3 flex items-start gap-2 bg-[var(--color-cream)] px-3.5 py-3 text-[13px]">
           <Repeat size={15} strokeWidth={1.6} className="mt-px shrink-0 text-[var(--color-sage)]" aria-hidden />
           <span>
             You subscribe to this · {everyLabel(current.weeks).toLowerCase()} · next {longDate(arrives(current))}.{" "}
-            <Link href="/account/subscriptions" className="text-[var(--color-brass)] hover:underline">Manage</Link>
+            <Link href="/account/subscriptions" className="underline underline-offset-4">Manage</Link>
           </span>
         </p>
       )}
@@ -165,9 +179,9 @@ function BuyOptions({
           <>
             <span className="flex items-baseline justify-between gap-3 text-[14px]">
               <span className="font-medium">
-                Subscribe &amp; Save <span className="ml-1 rounded-full bg-[var(--color-brass)] px-1.5 py-px text-[11px] font-semibold text-[var(--color-ink)]">{pct}%</span>
+                Subscribe &amp; Save <span className="ml-1 text-[var(--color-muted)]">· {pct}% off</span>
               </span>
-              <span className="tnum font-semibold text-[var(--color-brass)]">{money(subPrice)}</span>
+              <span className="tnum">{money(subPrice)}</span>
             </span>
             <span className="mt-1 block text-[12px] leading-snug text-[var(--color-muted)]">
               {member ? "Member price" : "Member price when you join"}, then {pct}% off every delivery. Skip or cancel anytime.
@@ -191,44 +205,44 @@ function BuyOptions({
         ))}
       </fieldset>
 
-      <label htmlFor="qty" className="mt-4 flex items-center gap-3 text-[14px]">
+      <label htmlFor="qty" className="mt-5 flex items-center gap-4 text-[13px] text-[var(--color-muted)]">
         Quantity
-        <select id="qty" value={qty} onChange={(e) => { setQty(+e.target.value); setDone(false); }} className="field h-9 w-20 px-3 text-[14px]">
+        <select id="qty" value={qty} onChange={(e) => { setQty(+e.target.value); setDone(false); }} className="field h-10 w-20 px-3 text-[14px] text-[var(--color-ivory)]">
           {Array.from({ length: 10 }, (_, i) => (
             <option key={i + 1} value={i + 1}>{i + 1}</option>
           ))}
         </select>
       </label>
 
-      <div className="mt-4 grid gap-2.5">
+      <div className="mt-5 grid gap-2.5">
         {mode === "once" ? (
           <>
-            <button className="btn btn-primary w-full rounded-full" onClick={onAdd}>Add to cart</button>
-            <button className="btn w-full rounded-full bg-[#17130f] text-[#f3ece0] hover:opacity-90" onClick={() => onBuyNow()}>Buy now</button>
+            <button className="btn btn-lg btn-primary w-full" onClick={onAdd}>Add to cart</button>
+            <button className="btn btn-lg btn-outline w-full" onClick={() => onBuyNow()}>Buy now</button>
           </>
         ) : member ? (
           done ? (
-            <div className="rounded-[12px] border border-[var(--color-sage)]/40 bg-[var(--color-sage)]/10 p-3.5 text-[13px] animate-[fade-up_240ms_var(--ease-out)_both]" role="status">
-              <p className="flex items-center gap-2 text-[14px] font-medium"><Check size={16} className="text-[var(--color-sage)]" aria-hidden /> Subscribed</p>
+            <div className="border border-[var(--color-ivory)] bg-[var(--color-cream)] p-4 text-[13px] animate-[fade-up_320ms_var(--ease-out)_both]" role="status">
+              <p className="flex items-center gap-2 text-[14px] font-medium"><Check size={15} strokeWidth={1.5} aria-hidden /> Subscribed</p>
               <p className="mt-1 text-[var(--color-muted)]">
                 First delivery {longDate(isoIn(1))}, then {everyLabel(weeks).toLowerCase()}. We&rsquo;ll text you two days before each one.
               </p>
-              <Link href="/account/subscriptions" className="mt-2 inline-block text-[var(--color-brass)] hover:underline">See your subscriptions</Link>
+              <Link href="/account/subscriptions" className="btn-text smallcaps mt-3 inline-block">See your subscriptions</Link>
             </div>
           ) : (
             <button
-              className="btn btn-primary w-full rounded-full"
+              className="btn btn-primary w-full"
               data-subscribe-now
               onClick={() => {
                 subs.add([{ id: p.id, qty }], weeks, isoIn(1));
                 setDone(true);
               }}
             >
-              <Repeat size={16} aria-hidden /> {current ? "Update subscription" : "Subscribe now"}
+              <Repeat size={13} strokeWidth={1.5} aria-hidden /> {current ? "Update subscription" : "Subscribe now"}
             </button>
           )
         ) : (
-          <button className="btn btn-primary w-full rounded-full" onClick={() => onBuyNow(weeks)}>
+          <button className="btn btn-primary w-full" onClick={() => onBuyNow(weeks)}>
             Join and subscribe
           </button>
         )}
@@ -262,167 +276,166 @@ export function ProductDetail({ id }: { id: string }) {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[1480px] px-4 pt-5 pb-28 sm:px-6">
-      <nav aria-label="Breadcrumb" className="text-[13px] text-[var(--color-muted)]">
-        <ol className="flex flex-wrap items-center gap-1">
-          <li><Link href="/shop" className="hover:text-[var(--color-ivory)] hover:underline">Shop</Link></li>
-          <li aria-hidden><ChevronRight size={13} /></li>
-          <li><Link href={`/shop?category=${encodeURIComponent(p.category)}`} className="hover:text-[var(--color-ivory)] hover:underline">{p.category}</Link></li>
-          <li aria-hidden><ChevronRight size={13} /></li>
+    <div className="mx-auto w-full max-w-[1600px] px-4 pt-6 pb-32 sm:px-8 lg:px-12">
+      <nav aria-label="Breadcrumb" className="text-[12px] text-[var(--color-muted)]">
+        <ol className="flex flex-wrap items-center gap-2">
+          <li><Link href="/shop" className="nav-link py-0">Shop</Link></li>
+          <li aria-hidden>/</li>
+          <li><Link href={`/shop?category=${encodeURIComponent(p.category)}`} className="nav-link py-0">{p.category}</Link></li>
+          <li aria-hidden>/</li>
           <li aria-current="page" className="text-[var(--color-ivory)]">{p.name}</li>
         </ol>
       </nav>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(280px,3fr)] lg:gap-8 xl:gap-12">
+      <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(340px,5fr)] lg:gap-16 xl:gap-24">
         <Gallery p={p} />
 
-        {/* Details */}
-        <div className="min-w-0">
-          <Link href={`/shop?q=${encodeURIComponent(p.brand)}`} className="text-[14px] text-[var(--color-brass)] hover:underline">
-            Visit the {p.brand} shelf
-          </Link>
-          <h1 className="display mt-2 text-[36px] leading-[1.08] sm:text-[44px]">{p.name}</h1>
-          <p className="mt-1 text-[14px] text-[var(--color-muted)]">{p.strain_type} · {p.category} · {p.format}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px]">
-            <span className="tnum">{p.rating.toFixed(1)}</span>
-            <Stars rating={p.rating} size={16} />
-            <a href="#reviews" className="text-[var(--color-brass)] hover:underline">{p.review_count} member ratings</a>
-            {p.rating >= 4.7 && <span className="badge border-[var(--color-brass)]/40 text-[var(--color-brass)]">Club pick</span>}
+        {/* Purchase column */}
+        <aside aria-label="Buy" className="min-w-0 lg:sticky lg:top-[156px] lg:self-start">
+          <h1 className="display animate-[fade-up_800ms_var(--ease-out)_both] text-[40px] leading-[1.04] sm:text-[52px]">{p.name}</h1>
+          <p className="mt-4 text-[14px] text-[var(--color-muted)]">
+            <Link href={`/shop?q=${encodeURIComponent(p.brand)}`} className="text-[var(--color-ivory)] underline decoration-[var(--color-hairline-strong)] underline-offset-4 hover:decoration-current">{p.brand}</Link>
+            {" "}· {p.strain_type} · {p.category} · {p.format}
+          </p>
+          <p className="mt-2 text-[13px] text-[var(--color-muted)]">
+            <span className="tnum text-[var(--color-ivory)]">{p.rating.toFixed(1)}</span> ·{" "}
+            <a href="#reviews" className="underline decoration-[var(--color-hairline-strong)] underline-offset-4 hover:decoration-current">{p.review_count} member ratings</a>
+          </p>
+
+          <div className="mt-8 border-t border-[var(--color-hairline)] pt-7">
+            <ProductPrice p={p} size={30} detail />
+            <p className="mt-3 text-[13px] text-[var(--color-muted)]">Free delivery · Tax calculated at checkout</p>
           </div>
 
-          <div className="mt-6 border-t border-[var(--color-hairline)] pt-6">
-            <ProductPrice p={p} size={40} detail />
-            <p className="mt-2 text-[13px] text-[var(--color-muted)]">Free delivery · Tax calculated at checkout</p>
-            <BoxMeter lines={lines} className="mt-4" />
-          </div>
+          <p className={`mt-6 text-[13px] ${p.in_stock ? "text-[var(--color-ivory)]" : "text-[var(--color-clay)]"}`}>
+            <span className={`mr-2 inline-block size-1.5 rounded-full align-middle ${p.in_stock ? "bg-[var(--color-sage)]" : "bg-[var(--color-clay)]"}`} aria-hidden />
+            {p.in_stock ? "In stock" : "Out of stock"}
+          </p>
+          {inCart > 0 && <p className="mt-1.5 text-[13px] text-[var(--color-muted)]">{inCart} already in your cart</p>}
 
-          <table className="mt-6 w-full border-t border-[var(--color-hairline)]">
-            <tbody>
-              <Row k="Brand" v={p.brand} />
-              <Row k="Type" v={p.strain_type} />
-              <Row k="Potency" v={p.potency} />
-              <Row k="Format" v={p.format} />
-              {p.flavor.length > 0 && <Row k="Flavor" v={p.flavor.map(cap).join(", ")} />}
-              <Row k="Effects" v={p.effects.map(cap).join(", ")} />
-            </tbody>
-          </table>
+          {p.in_stock ? (
+            <BuyOptions p={p} qty={qty} setQty={setQty} member={member} onAdd={() => add(p.id, qty)} onBuyNow={(subscribeWeeks) => {
+              add(p.id, qty);
+              router.push(subscribeWeeks ? `/checkout?subscribe=${subscribeWeeks}` : "/checkout");
+            }} />
+          ) : (
+            <button className="btn btn-outline mt-5 w-full" onClick={() => setChatOpen(true)}>Ask {PERSONA.name} for something similar</button>
+          )}
 
-          <div className="mt-6 border-t border-[var(--color-hairline)] pt-6">
-            <h2 className="text-[17px] font-semibold">About this item</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-[15px] leading-relaxed marker:text-[var(--color-brass)]">
-              {bullets.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
+          <BoxMeter lines={lines} className="mt-5" />
 
-        {/* Buy box */}
-        <aside aria-label="Buy" className="lg:sticky lg:top-[156px] lg:self-start">
-          <div className="rounded-[var(--radius-panel)] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-5">
-            <Price value={member ? p.member_price : p.retail_price} size={34} />
-            {!member && (
-              <p className="mt-2 flex items-center gap-1.5 text-[13px]">
-                <ClubSeal /> <span className="tnum font-semibold">{money(p.member_price)}</span>
-                <span className="text-[var(--color-muted)]">when you join at checkout</span>
-                <span className="font-semibold text-[var(--color-brass)]">· save {Math.round((1 - p.member_price / p.retail_price) * 100)}%</span>
-              </p>
-            )}
-            <p className="mt-3 flex gap-2 text-[14px]">
-              <Truck size={18} strokeWidth={1.5} className="mt-0.5 shrink-0 text-[var(--color-brass)]" aria-hidden />
-              <span><span className="font-medium">Free delivery</span> tonight, 7:00 to 8:00 PM</span>
+          <dl className="mt-7 space-y-3 border-t border-[var(--color-hairline)] pt-6 text-[13px]">
+            <div className="flex gap-3">
+              <Truck size={16} strokeWidth={1.25} className="mt-0.5 shrink-0" aria-hidden />
+              <dt className="sr-only">Delivery</dt>
+              <dd><span className="font-medium">Free delivery</span> tonight, 7:00 to 8:00 PM</dd>
+            </div>
+            <div className="flex gap-3 text-[var(--color-muted)]">
+              <MapPin size={16} strokeWidth={1.25} className="mt-0.5 shrink-0" aria-hidden />
+              <dt className="sr-only">Address</dt>
+              <dd>{signedIn ? `Deliver to ${MEMBER.first}, Phoenix 85018` : "Delivering across Phoenix"}</dd>
+            </div>
+            <div className="flex gap-3 text-[var(--color-muted)]">
+              <IdCard size={16} strokeWidth={1.25} className="mt-0.5 shrink-0" aria-hidden />
+              <dt className="sr-only">At the door</dt>
+              <dd>Your driver checks ID at the door.</dd>
+            </div>
+          </dl>
+          <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-[13px]">
+            <dt className="text-[var(--color-muted)]">Delivered by</dt><dd>The Club courier</dd>
+            <dt className="text-[var(--color-muted)]">Sold by</dt><dd>The Club</dd>
+            <dt className="text-[var(--color-muted)]">Payment</dt><dd>{member ? "Your linked bank" : "Bank link, set up when you join"}</dd>
+          </dl>
+          {!member && (
+            <p className="mt-5 flex flex-wrap items-center gap-1.5 text-[13px]">
+              <ClubSeal /> <span className="tnum">{money(p.member_price)}</span>
+              <span className="text-[var(--color-muted)]">when you join at checkout · save {Math.round((1 - p.member_price / p.retail_price) * 100)}%</span>
             </p>
-            <p className="mt-2 flex gap-2 text-[13px] text-[var(--color-muted)]">
-              <MapPin size={17} strokeWidth={1.5} className="mt-0.5 shrink-0" aria-hidden />
-              {signedIn ? `Deliver to ${MEMBER.first}, Phoenix 85018` : "Delivering across Phoenix"}
-            </p>
-
-            <p className={`mt-4 text-[17px] font-medium ${p.in_stock ? "text-[var(--color-sage)]" : "text-[var(--color-clay)]"}`}>
-              {p.in_stock ? "In stock" : "Out of stock"}
-            </p>
-            {inCart > 0 && <p className="mt-1 text-[13px] text-[var(--color-muted)]">{inCart} already in your cart</p>}
-
-            {p.in_stock ? (
-              <BuyOptions p={p} qty={qty} setQty={setQty} member={member} onAdd={() => add(p.id, qty)} onBuyNow={(subscribeWeeks) => {
-                add(p.id, qty);
-                router.push(subscribeWeeks ? `/checkout?subscribe=${subscribeWeeks}` : "/checkout");
-              }} />
-            ) : (
-              <button className="btn btn-outline mt-4 w-full" onClick={() => setChatOpen(true)}>Ask {PERSONA.name} for something similar</button>
-            )}
-
-            <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-t border-[var(--color-hairline)] pt-4 text-[13px]">
-              <dt className="text-[var(--color-muted)]">Delivered by</dt><dd>The Club courier</dd>
-              <dt className="text-[var(--color-muted)]">Sold by</dt><dd>The Club</dd>
-              <dt className="text-[var(--color-muted)]">Payment</dt><dd>{member ? "Your linked bank" : "Bank link, set up when you join"}</dd>
-            </dl>
-            <p className="mt-4 flex gap-2 text-[13px] text-[var(--color-muted)]">
-              <IdCard size={17} strokeWidth={1.5} className="mt-px shrink-0" aria-hidden />
-              Your driver checks ID at the door.
-            </p>
-          </div>
+          )}
 
           <button
             onClick={() => setChatOpen(true)}
-            className="mt-3 flex w-full items-center gap-3 rounded-[var(--radius-panel)] border border-[var(--color-hairline)] px-4 py-3 text-left hover:border-[var(--color-brass)]/50"
+            className="group mt-8 flex w-full items-center gap-4 border-t border-[var(--color-hairline)] pt-6 text-left"
           >
-            <NoraAvatar size={34} />
+            <NoraAvatar size={36} />
             <span className="flex-1">
-              <span className="block text-[14px] font-medium">Questions about this?</span>
+              <span className="display block text-[20px]">Questions about this?</span>
               <span className="block text-[13px] text-[var(--color-muted)]">Ask {PERSONA.name}, she knows the shelf.</span>
             </span>
-            <MessageCircle size={17} strokeWidth={1.5} className="text-[var(--color-brass)]" aria-hidden />
+            <MessageCircle size={16} strokeWidth={1.25} className="transition-transform duration-500 group-hover:translate-x-1" aria-hidden />
           </button>
         </aside>
       </div>
 
+      {/* Details */}
+      <section aria-labelledby="about" className="mt-28 grid gap-12 border-t border-[var(--color-hairline)] pt-12 lg:grid-cols-12">
+        <div className="lg:col-span-6">
+          <h2 id="about" className="display text-[34px] sm:text-[44px]">About this item</h2>
+          <ul className="mt-8 space-y-4 text-[15px] leading-[1.7]">
+            {bullets.map((b) => (
+              <li key={b} className="grid grid-cols-[20px_1fr] gap-3">
+                <span className="mt-[0.85em] h-px w-3 bg-[var(--color-ivory)]" aria-hidden />
+                <span className="max-w-[62ch]">{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <table className="w-full self-start border-t border-[var(--color-ivory)] lg:col-span-5 lg:col-start-8">
+          <tbody>
+            <Row k="Brand" v={p.brand} />
+            <Row k="Type" v={p.strain_type} />
+            <Row k="Potency" v={p.potency} />
+            <Row k="Format" v={p.format} />
+            {p.flavor.length > 0 && <Row k="Flavor" v={p.flavor.map(cap).join(", ")} />}
+            <Row k="Effects" v={p.effects.map(cap).join(", ")} />
+          </tbody>
+        </table>
+      </section>
+
       {/* Related */}
-      <section aria-labelledby="related" className="mt-20 border-t border-[var(--color-hairline)] pt-10">
-        <h2 id="related" className="display text-[30px]">Members also bought</h2>
-        <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-          {related.map((x) => (
+      <section aria-labelledby="related" className="mt-28 border-t border-[var(--color-hairline)] pt-8">
+        <h2 id="related" className="display text-[34px] sm:text-[44px]">Members also bought</h2>
+        <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6 lg:grid-cols-4">
+          {related.slice(0, 4).map((x) => (
             <li key={x.id} className="flex">
-              <ProductCard p={x} compact />
+              <ProductCard p={x} />
             </li>
           ))}
         </ul>
       </section>
 
       {/* Reviews */}
-      <section id="reviews" aria-labelledby="reviews-h" className="mt-16 grid scroll-mt-40 gap-10 border-t border-[var(--color-hairline)] pt-10 lg:grid-cols-[300px_1fr]">
+      <section id="reviews" aria-labelledby="reviews-h" className="mt-28 grid scroll-mt-40 gap-12 border-t border-[var(--color-hairline)] pt-10 lg:grid-cols-[320px_1fr] lg:gap-20">
         <div>
-          <h2 id="reviews-h" className="display text-[30px]">Member reviews</h2>
-          <div className="mt-3 flex items-center gap-3">
-            <Stars rating={p.rating} size={18} />
-            <span className="text-[16px]">{p.rating.toFixed(1)} out of 5</span>
+          <h2 id="reviews-h" className="display text-[34px] sm:text-[44px]">Member reviews</h2>
+          <div className="mt-5 flex items-center gap-3">
+            <Stars rating={p.rating} size={15} />
+            <span className="text-[15px]">{p.rating.toFixed(1)} out of 5</span>
           </div>
           <p className="mt-1 text-[13px] text-[var(--color-muted)]">{p.review_count} member ratings</p>
-          <ul className="mt-5 space-y-2">
+          <ul className="mt-6 space-y-2.5">
             {dist.map((pct, i) => (
-              <li key={i} className="grid grid-cols-[48px_1fr_40px] items-center gap-3 text-[13px]">
+              <li key={i} className="grid grid-cols-[48px_1fr_40px] items-center gap-3 text-[12px]">
                 <span>{5 - i} star</span>
-                <span className="h-2.5 overflow-hidden rounded-full bg-[var(--color-raised-2)]">
-                  <span className="block h-full rounded-full bg-[var(--color-brass)]" style={{ width: `${pct}%` }} />
+                <span className="h-px bg-[var(--color-hairline-strong)]">
+                  <span className="block h-px bg-[var(--color-ivory)]" style={{ width: `${pct}%` }} />
                 </span>
                 <span className="tnum text-right text-[var(--color-muted)]">{pct}%</span>
               </li>
             ))}
           </ul>
-          <p className="mt-5 text-[12px] text-[var(--color-faint)]">Sample reviews for the demo. Names are fictional.</p>
+          <p className="mt-6 text-[12px] text-[var(--color-faint)]">Sample reviews for the demo. Names are fictional.</p>
         </div>
-        <ul className="space-y-8">
+        <ul>
           {reviewsFor(p).map((r, i) => (
-            <li key={i} className="border-b border-[var(--color-hairline)] pb-8 last:border-0">
-              <div className="flex items-center gap-3">
-                <span className="grid size-9 place-items-center rounded-full bg-[var(--color-raised-2)] text-[13px]">{REVIEWERS[i].name[0]}</span>
-                <span className="text-[14px] font-medium">{REVIEWERS[i].name}</span>
+            <li key={i} className="border-t border-[var(--color-hairline)] py-9 first:border-t-0 first:pt-0">
+              <div className="flex items-center gap-4">
+                <Stars rating={r.stars} size={12} />
+                <span className="text-[12px] text-[var(--color-muted)]">{REVIEWERS[i].name} · {REVIEWERS[i].date}</span>
               </div>
-              <div className="mt-3 flex items-center gap-3">
-                <Stars rating={r.stars} size={14} />
-                <span className="text-[15px] font-semibold">{r.title}</span>
-              </div>
-              <p className="mt-1 text-[13px] text-[var(--color-muted)]">Reviewed {REVIEWERS[i].date} · Verified member order</p>
-              <p className="mt-3 max-w-[70ch] text-[15px] leading-relaxed">{r.body}</p>
+              <p className="display mt-4 text-[24px] leading-tight">{r.title}</p>
+              <p className="mt-3 max-w-[66ch] text-[15px] leading-[1.7]">{r.body}</p>
+              <p className="mt-3 text-[12px] text-[var(--color-muted)]">Verified member order</p>
             </li>
           ))}
         </ul>

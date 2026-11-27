@@ -141,7 +141,7 @@ export function TripReport({ id }: { id: string }) {
         </div>
 
         {!saved && (
-          <p className="mx-auto mb-6 max-w-[1060px] rounded-[10px] border border-[var(--color-hairline-strong)] p-3.5 text-[14px] text-[var(--color-muted)] print:hidden">
+          <p className="mx-auto mb-6 max-w-[1060px] rounded-none border border-[var(--color-hairline-strong)] p-3.5 text-[14px] text-[var(--color-muted)] print:hidden">
             This order wasn&rsquo;t placed in this browser, so the report shows the member&rsquo;s usual order as sample contents.
           </p>
         )}

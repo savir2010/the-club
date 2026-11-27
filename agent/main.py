@@ -12,13 +12,14 @@ from typing import Any, AsyncIterator, Literal
 
 import anthropic
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 import config
 import shop
 import cart_store
 import sms_bridge
+import twilio_sms
 import edge_tts
 import verify
 
@@ -293,6 +294,25 @@ async def sms_inject(req: SmsInject):
         return {"ok": True}
     except Exception as e:
         return JSONResponse({"message": str(e)}, status_code=400)
+
+
+EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
+
+
+@app.post("/sms/twilio")
+async def sms_twilio(request: Request):
+    """Twilio's webhook for incoming texts (NORA_SMS_PROVIDER=twilio), passed on by the shop.
+    The shop sends the address Twilio called in x-club-origin; the signature proves it was Twilio."""
+    from urllib.parse import parse_qsl
+
+    params = dict(parse_qsl((await request.body()).decode(), keep_blank_values=True))
+    url = request.headers.get("x-club-origin", "").rstrip("/") + twilio_sms.WEBHOOK_PATH
+    if not twilio_sms.signature_ok(url, params, request.headers.get("x-twilio-signature", "")):
+        log.warning("rejected a Twilio webhook with a bad signature (url %s)", url)
+        return JSONResponse({"message": "Bad signature."}, status_code=403)
+    sms_bridge.learn_public_url(request.headers.get("x-club-origin", ""))
+    sms_bridge.receive_twilio(params.get("From", ""), params.get("Body", ""))
+    return Response(EMPTY_TWIML, media_type="text/xml")  # Nora replies separately, bubble by bubble
 
 
 class VerifyRequest(BaseModel):

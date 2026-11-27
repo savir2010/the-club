@@ -8,11 +8,19 @@ import { ShopProvider } from "@/components/shop/ShopState";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import "./globals.css";
 
-// Self-hosted (from @fontsource-variable/manrope) so it never depends on a network fetch.
-const manrope = localFont({
-  src: "../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2",
-  variable: "--font-manrope",
-  weight: "200 800",
+// Self-hosted variable fonts (Google Fonts, OFL) so they never depend on a network fetch.
+const cormorant = localFont({
+  src: [
+    { path: "../fonts/cormorant-garamond-latin.woff2", style: "normal", weight: "300 700" },
+    { path: "../fonts/cormorant-garamond-italic-latin.woff2", style: "italic", weight: "300 700" },
+  ],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+const inter = localFont({
+  src: "../fonts/inter-latin.woff2",
+  variable: "--font-inter",
+  weight: "100 900",
   display: "swap",
 });
 
@@ -23,12 +31,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f2ea",
+  themeColor: "#faf9f6",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${manrope.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${cormorant.variable} ${inter.variable}`}>
       <body>
         <Suspense fallback={null}>
           <NavProgress />

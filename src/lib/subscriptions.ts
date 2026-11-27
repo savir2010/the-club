@@ -61,7 +61,12 @@ export const longDate = (iso: string) =>
 /** The delivery after `iso` for a subscription that repeats every `weeks` weeks. */
 export const after = (iso: string, weeks: number) => isoIn(weeks * 7, parse(iso));
 /** When a subscription will actually arrive next (a skipped delivery moves to the one after). */
-export const arrives = (s: Subscription) => (s.skipped ? after(s.next, s.weeks) : s.next);
+export const arrives = (s: Subscription) => {
+  let next = s.skipped ? after(s.next, s.weeks) : s.next;
+  const today = isoIn(0);
+  for (let i = 0; next < today && i < 520; i++) next = after(next, s.weeks); // roll past dates forward on schedule
+  return next;
+};
 
 export function useSubscriptions() {
   const subs = useSyncExternalStore(subscribe, read, () => SEED);

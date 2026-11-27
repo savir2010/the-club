@@ -5,6 +5,7 @@ from typing import Any, Callable
 from pydantic import BaseModel, Field, ValidationError
 
 import config
+import rep_call
 import shop
 
 SLOTS: dict[str, list[str]] = config.load("settings.json")["delivery_slots"]
@@ -114,6 +115,11 @@ _TOOLS = [
         },
     },
     {
+        "name": "call_representative",
+        "description": "Ring a human representative of The Club on the phone. Call it when the shopper asks for a person, a human, a representative, customer service or a call back, or is upset in a way you can't fix. It only rings the representative; it does not connect the shopper to a conversation.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
         "name": "suggest_replies",
         "description": "Set the quick-reply chips above the member's input box. Call at the end of every reply with two to four short things the member might say next, in their own voice.",
         "input_schema": {
@@ -187,6 +193,7 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "get_member_profile": _Empty,
     "get_bundles": _Empty,
     "go_to_checkout": _Checkout,
+    "call_representative": _Empty,
     "suggest_replies": _Replies,
 }
 
@@ -310,6 +317,10 @@ def run_tool(name: str, raw: Any, cart: list[shop.Line], emit: Emit, member: boo
             else:
                 note = "The member is being taken to checkout to review it."
             return _json({"ok": True, "note": note, "plan": plan, "cart": shop.cart_view(cart)})
+        case "call_representative":
+            ok, msg = rep_call.call_representative()
+            return Outcome(content=msg + (" Tell the shopper in one short line that a representative has been called." if ok
+                                          else " Tell the shopper plainly and offer to keep helping."), is_error=not ok)
         case "suggest_replies":
             replies = [r.strip()[:40] for r in a["replies"] if r.strip()][:4]
             emit({"t": "chips", "items": replies})

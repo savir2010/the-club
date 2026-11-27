@@ -106,13 +106,13 @@ export function useNoraPointer(start?: () => { x: number; y: number }) {
           style={{ opacity: visible ? 1 : 0, transform: pos.current ? `translate(${pos.current.x}px, ${pos.current.y}px)` : "translate(-200px,-200px)" }}
         >
           <svg width="28" height="28" viewBox="0 0 24 24" className="-translate-x-[3px] -translate-y-[2px] drop-shadow-[0_4px_8px_rgb(60_44_20/0.35)]">
-            <path d="M4 2.5 19.5 12l-6.8 1.6 3.9 7.2-2.6 1.4-3.9-7.2L4.6 19.6z" fill="#8d6b3d" stroke="#fffdf9" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M4 2.5 19.5 12l-6.8 1.6 3.9 7.2-2.6 1.4-3.9-7.2L4.6 19.6z" fill="#111111" stroke="#FAF9F6" strokeWidth="1.5" strokeLinejoin="round" />
           </svg>
-          <div className="mt-0.5 ml-4 flex w-max max-w-[300px] items-center gap-1.5 rounded-full bg-[#8d6b3d] py-1 pr-3 pl-1 text-[12px] leading-none text-white shadow-[0_8px_20px_-6px_rgb(60_44_20/0.5)]">
+          <div className="mt-0.5 ml-4 flex w-max max-w-[300px] items-center gap-1.5 bg-[#111111] py-1 pr-3 pl-1 text-[12px] leading-none text-white shadow-[0_8px_20px_-6px_rgb(60_44_20/0.5)]">
             <span className="overflow-hidden rounded-full ring-1 ring-white/60">
               <NoraAvatar size={20} />
             </span>
-            <span className="font-semibold">Nora</span>
+            <span className="font-medium">Nora</span>
             {caption && <span className="truncate text-white/85">· {caption}</span>}
           </div>
         </div>,

@@ -63,7 +63,7 @@ export function AgeGate() {
         }
       }}
     >
-      <div className="absolute inset-0 bg-[#f7f2ea]/45 backdrop-blur-[18px]" aria-hidden />
+      <div className="absolute inset-0 bg-[#FAF9F6]/45 backdrop-blur-[18px]" aria-hidden />
       <div className="relative w-full max-w-[440px] animate-fade-up rounded-[var(--radius-panel)] border border-[var(--color-hairline-strong)] bg-[var(--color-canvas)]/92 px-7 pt-9 pb-7 text-center shadow-[var(--shadow-float)] sm:px-10">
         <div className="mx-auto mb-6 w-fit">
           <Monogram size={48} />
