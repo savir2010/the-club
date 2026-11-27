@@ -1,6 +1,6 @@
 import { money } from "@/lib/data";
 
-// The member ledger: retail struck through, member price in brass numerals,
+// The member ledger: retail struck through, member price in quiet tabular figures,
 // optional bundle price. Used identically everywhere a price appears.
 export function Ledger({
   retail,
@@ -15,11 +15,11 @@ export function Ledger({
   size?: "sm" | "md" | "lg";
   align?: "start" | "end";
 }) {
-  const big = size === "lg" ? "text-[30px]" : size === "md" ? "text-[22px]" : "text-[18px]";
+  const big = size === "lg" ? "text-[22px]" : size === "md" ? "text-[17px]" : "text-[15px]";
   return (
     <div className={`flex flex-col ${align === "end" ? "items-end text-right" : ""}`}>
       <div className="flex items-baseline gap-2">
-        <span className="tnum text-[13px] text-[var(--color-muted)] line-through decoration-[var(--color-muted)]/70">
+        <span className="tnum text-[12px] text-[var(--color-muted)] line-through decoration-[var(--color-muted)]/70">
           <span className="sr-only">Retail price </span>
           {money(retail)}
         </span>

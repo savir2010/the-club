@@ -16,7 +16,7 @@ export const BANKS: Bank[] = [
 export function BankBadge({ bank, size = 44 }: { bank: Bank; size?: number }) {
   return (
     <span
-      className="grid shrink-0 place-items-center overflow-hidden rounded-[12px] bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.08)]"
+      className="grid shrink-0 place-items-center overflow-hidden rounded-none bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.08)]"
       style={{ width: size, height: size }}
       aria-hidden
     >

@@ -45,7 +45,7 @@ export function ArizonaCheck({ id, name, done }: { id: DocResult | null; name: s
           </p>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-[0.04em] uppercase transition-colors ${
+          className={`shrink-0 px-2.5 py-1 text-[11px] font-medium tracking-[0.04em] uppercase transition-colors ${
             finished ? "bg-[var(--color-sage)] text-white" : "bg-[var(--color-raised-2)] text-[var(--color-muted)]"
           }`}
         >

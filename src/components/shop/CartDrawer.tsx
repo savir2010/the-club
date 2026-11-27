@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, X } from "lucide-react";
-import { BoxMeter, CartLine, CartSummary, SavingsBreakdown, totals } from "@/components/cart";
+import { BoxMeter, CartLine, CartSummary, totals } from "@/components/cart";
 import { money } from "@/lib/data";
 import { useSession } from "@/lib/session";
 import { Monogram } from "@/components/brand";
@@ -44,7 +44,7 @@ export function CartDrawer() {
   return (
     <div className={`fixed inset-0 z-50 ${leaving ? "pointer-events-none" : ""}`} role="dialog" aria-modal="true" aria-label="Cart" data-leaving={leaving || undefined}>
       <button
-        className="absolute inset-0 animate-[fade-up_180ms_var(--ease-out)_both] bg-[#2b261f]/25"
+        className="absolute inset-0 animate-[fade-up_180ms_var(--ease-out)_both] bg-[#111111]/25"
         style={leaving ? { animation: "scrim-out 200ms var(--ease-in) both" } : undefined}
         onClick={() => setCartOpen(false)}
         aria-label="Close cart"
@@ -96,12 +96,11 @@ export function CartDrawer() {
             <div className="mb-4 flex items-center gap-3 text-[14px]">
               <Monogram size={30} />
               <p className="leading-snug">
-                <span className="font-semibold">Members pay <span className="tnum">{money(t.member)}</span></span>
+                <span className="font-medium">Members pay <span className="tnum">{money(t.member)}</span></span>
                 <span className="text-[var(--color-muted)]"> for this cart. You&rsquo;ll join in a few steps at checkout.</span>
               </p>
             </div>
           )}
-          {!member && <SavingsBreakdown lines={lines} pitch className="mb-5" />}
           {lines.length > 0 && <BoxMeter lines={lines} className="mb-5" />}
           <CartSummary lines={lines} />
           <Link

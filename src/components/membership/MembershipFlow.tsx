@@ -284,7 +284,7 @@ export function MembershipFlow({
           <span />
         )}
         <button
-          className="btn btn-lg btn-primary min-w-[180px] rounded-full"
+          className="btn btn-lg btn-primary min-w-[180px]"
           disabled={!canNext || finishing}
           onClick={() => (step === STEPS.length - 1 ? finish() : setStep(step + 1))}
         >

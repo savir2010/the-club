@@ -86,7 +86,7 @@ export function BankLink({ onLinked }: { onLinked: (summary: string | null) => v
   const b = bank!;
   const acct = ACCOUNTS.find((x) => x.id === account)!;
   return (
-    <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] shadow-[0_18px_40px_-24px_rgb(60_44_20/0.4)]">
+    <div className="overflow-hidden rounded-[var(--radius-panel)] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)]">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--color-hairline)] px-5 py-3.5">
         {stage === "linked" ? (
           <span />
@@ -105,7 +105,7 @@ export function BankLink({ onLinked }: { onLinked: (summary: string | null) => v
         <div className="flex items-center gap-3">
           <BankBadge bank={b} size={40} />
           <div>
-            <p className="text-[16px] font-semibold leading-tight">{b.name}</p>
+            <p className="text-[16px] font-medium leading-tight">{b.name}</p>
             <p className="text-[12px] text-[var(--color-muted)]">
               {stage === "login" ? "Connect your account" : stage === "code" ? "Verify it's you" : stage === "accounts" ? "Choose an account" : "Connecting"}
             </p>
@@ -153,7 +153,7 @@ export function BankLink({ onLinked }: { onLinked: (summary: string | null) => v
             <label htmlFor="bank-code" className="sr-only">Verification code</label>
             <div className="mt-4 grid grid-cols-6 gap-2" aria-hidden>
               {"482913".split("").map((d, i) => (
-                <span key={i} className="num grid h-12 place-items-center rounded-[10px] border border-[var(--color-hairline-strong)] bg-[var(--color-canvas)] text-[22px]">
+                <span key={i} className="num grid h-12 place-items-center rounded-none border border-[var(--color-hairline-strong)] bg-[var(--color-canvas)] text-[22px]">
                   {d}
                 </span>
               ))}
@@ -172,7 +172,7 @@ export function BankLink({ onLinked }: { onLinked: (summary: string | null) => v
               {ACCOUNTS.map((a) => (
                 <label key={a.id} className="cursor-pointer">
                   <input type="radio" name="acct" className="peer sr-only" checked={account === a.id} onChange={() => setAccount(a.id)} />
-                  <span className="flex items-center justify-between gap-3 rounded-[12px] border border-[var(--color-hairline-strong)] px-4 py-3.5 transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/6 peer-focus-visible:outline-2 peer-focus-visible:outline-[var(--color-brass)]">
+                  <span className="flex items-center justify-between gap-3 rounded-none border border-[var(--color-hairline-strong)] px-4 py-3.5 transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/6 peer-focus-visible:outline-2 peer-focus-visible:outline-[var(--color-brass)]">
                     <span>
                       <span className="block text-[15px] font-medium">{a.name}</span>
                       <span className="tnum block text-[13px] text-[var(--color-muted)]">••••{a.mask}</span>
@@ -197,7 +197,7 @@ export function BankLink({ onLinked }: { onLinked: (summary: string | null) => v
 
         {stage === "linked" && (
           <div className="mt-6" role="status">
-            <div className="flex items-center gap-3 rounded-[12px] border border-[var(--color-sage)]/40 bg-[var(--color-sage)]/8 px-4 py-3.5">
+            <div className="flex items-center gap-3 rounded-none border border-[var(--color-sage)]/40 bg-[var(--color-sage)]/8 px-4 py-3.5">
               <span className="grid size-8 place-items-center rounded-full bg-[var(--color-sage)] text-white">
                 <Check size={17} strokeWidth={3} aria-hidden />
               </span>

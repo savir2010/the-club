@@ -31,6 +31,17 @@ copy between services.
    | `ANTHROPIC_KEY` | the Anthropic key |
    | `SITE_PASSWORD` | a password for the demo (the username is `club`) |
 
+   Optional, for **Speak to someone** (the header link, and Nora when someone asks for a person).
+   Without these the link says calling isn't set up.
+
+   | Name | Value |
+   |---|---|
+   | `TWILIO_ACCOUNT_SID` | from the Twilio console |
+   | `TWILIO_AUTH_TOKEN` | from the Twilio console |
+   | `TWILIO_FROM_NUMBER` | the Twilio number the call comes from |
+   | `REP_CALL_TO` | the phone that rings |
+   | `REP_CALL_LINE` | optional: what the call says after a 2-second pause |
+
 4. Click **Deploy**. When it finishes, open the address Vercel shows, sign in with `club` and
    your password, and try the chat.
 

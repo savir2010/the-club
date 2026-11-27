@@ -84,6 +84,13 @@ curl -X POST localhost:8100/sms/inject -H 'Content-Type: application/json' \
 curl localhost:8100/sms/status     # "outbox" shows what Nora would have texted
 ```
 
+## Texting through Twilio instead of iMessage
+Add `NORA_SMS_PROVIDER=twilio` to `.env.local`, next to `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` and `TWILIO_FROM_NUMBER`. Then `npm run demo` as usual. Messages, Full Disk Access and the Automation permission aren't needed. The site shows the Twilio number as Nora's number.
+- **Replies reach Nora through a webhook.** Twilio posts each text to `<public address>/api/nora/sms/twilio`. The agent points the number there by itself once it knows the public address, which needs `cloudflared` (or ngrok). The address changes every run, and the agent updates the webhook each time.
+- **`TWILIO_FROM_NUMBER` must be a number the account owns** (Twilio console > Phone Numbers). The trial "try it" sender can text out but can't receive. `curl localhost:8100/sms/status` shows `twilio_inbound` with what's wrong.
+- **Trial accounts can't be used.** They may only send Twilio's predefined templates, so every reply from Nora fails with error 572006 ("Trial accounts can only use predefined SMS templates"). Upgrade the account. Texting US numbers then also needs A2P 10DLC registration (or a toll-free number with toll-free verification).
+- The rehearsal mode (`NORA_SMS_DRY_RUN=1`) works the same way.
+
 ## If something's wrong
 - **"Texting Nora: OFF" / "Can't read …chat.db":** Full Disk Access isn't on for Terminal. Turn it on, quit Terminal fully and reopen it.
 - **"No iMessage account is signed in":** Messages > Settings > iMessage, then sign in.

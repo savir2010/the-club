@@ -33,25 +33,25 @@ export function BoxMeter({ lines, className = "" }: { lines: Line[]; className?:
   return (
     <div
       data-box-meter={t.boxed ? "full" : t.count}
-      className={`flex items-center gap-3.5 rounded-[14px] border p-3.5 ${t.boxed ? "border-[var(--color-brass)]/45 bg-[var(--color-brass)]/[0.08]" : "border-[var(--color-hairline-strong)]"} ${className}`}
+      className={`flex items-center gap-4 border p-4 transition-colors duration-500 ${t.boxed ? "border-[var(--color-ivory)] bg-[var(--color-raised-2)]" : "border-[var(--color-hairline-strong)]"} ${className}`}
     >
-      <div className="flex shrink-0 -space-x-2.5" aria-hidden>
+      <div className="flex shrink-0 gap-1.5" aria-hidden>
         {Array.from({ length: BOX.size }, (_, i) => {
           const id = units[i];
-          if (!id) return <span key={i} className="grid size-10 place-items-center rounded-full border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-raised)] text-[15px] text-[var(--color-faint)]">+</span>;
+          if (!id) return <span key={i} className="grid h-12 w-10 place-items-center border border-[var(--color-hairline-strong)] text-[14px] font-light text-[var(--color-faint)]">+</span>;
           const p = byId(id);
           return (
-            <span key={i} className="relative size-10 overflow-hidden rounded-full bg-white ring-2 ring-[var(--color-raised)] animate-[fade-up_260ms_var(--ease-out)_both]">
+            <span key={i} className="relative h-12 w-10 overflow-hidden animate-[fade-up_360ms_var(--ease-out)_both]">
               <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
               {i === BOX.size - 1 && extra > 0 && (
-                <span className="tnum absolute inset-0 grid place-items-center bg-[#17130f]/60 text-[12px] font-semibold text-white">+{extra}</span>
+                <span className="tnum absolute inset-0 grid place-items-center bg-[#111111]/60 text-[12px] font-medium text-white">+{extra}</span>
               )}
             </span>
           );
         })}
       </div>
       <div className="min-w-0 text-[13px] leading-snug">
-        <p className="text-[14px] font-semibold">
+        <p className="display text-[18px] leading-tight">
           {t.boxed ? `Your box is full · ${BOX.pct}% off` : `Add ${t.toBox} more for ${BOX.pct}% off`}
         </p>
         <p className="mt-0.5 text-[var(--color-muted)]">
@@ -75,7 +75,7 @@ export function Stepper({
 }) {
   return (
     <div
-      className="inline-flex h-8 items-center rounded-[8px] border border-[var(--color-hairline-strong)]"
+      className="inline-flex h-8 items-center rounded-none border border-[var(--color-hairline-strong)]"
       role="group"
       aria-label={`Quantity for ${label}`}
     >
@@ -124,11 +124,11 @@ export function CartLine({
   return (
     <li
       ref={row}
-      className={`group grid grid-cols-[56px_1fr] gap-3 rounded-[10px] px-2 py-3 ${line.fresh ? "animate-[slide-in_260ms_var(--ease-out)_both,row-glow_1600ms_var(--ease-out)_both]" : ""}`}
+      className={`group grid grid-cols-[56px_1fr] gap-3 rounded-none px-2 py-3 ${line.fresh ? "animate-[slide-in_260ms_var(--ease-out)_both,row-glow_1600ms_var(--ease-out)_both]" : ""}`}
     >
       <button
         onClick={() => onOpen?.(p)}
-        className="size-14 overflow-hidden rounded-[8px] border border-[var(--color-hairline)]"
+        className="size-14 overflow-hidden rounded-none border border-[var(--color-hairline)]"
         aria-label={`View ${p.name}`}
       >
         <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
@@ -143,7 +143,7 @@ export function CartLine({
           </div>
           <button
             onClick={removeSoftly}
-            className="-mt-1 -mr-1 grid size-7 shrink-0 place-items-center rounded-md text-[var(--color-faint)] hover:text-[var(--color-ivory)]"
+            className="-mt-1 -mr-1 grid size-7 shrink-0 place-items-center rounded-none text-[var(--color-faint)] hover:text-[var(--color-ivory)]"
             aria-label={`Remove ${p.name}`}
           >
             <X size={14} />
@@ -218,18 +218,18 @@ export function SavingsBreakdown({
   const pctOff = Math.round((saved / t.retail) * 100);
   const chip = (txt: string, on = true) => (
     <span
-      className={`tnum inline-flex h-[22px] min-w-[46px] items-center justify-center rounded-full px-2 text-[12px] font-bold ${
-        on ? "bg-[var(--color-brass)] text-[var(--color-on-brass)]" : "border border-dashed border-[var(--color-brass)]/60 text-[var(--color-brass)]"
+      className={`tnum inline-flex min-w-[40px] text-[13px] ${
+        on ? "text-[var(--color-ivory)]" : "text-[var(--color-muted)]"
       }`}
     >
       {txt}
     </span>
   );
   return (
-    <div data-savings className={`rounded-[14px] bg-[var(--color-brass)]/[0.09] p-4 ring-1 ring-[var(--color-brass)]/30 ${className}`}>
+    <div data-savings className={`rounded-none bg-[var(--color-brass)]/[0.09] p-4 ring-1 ring-[var(--color-brass)]/30 ${className}`}>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold tracking-[0.1em] text-[var(--color-brass)] uppercase">{pitch ? "Join and save" : "You're saving"}</p>
+          <p className="display text-[20px] leading-tight">{pitch ? "Join and save" : "You're saving"}</p>
           <p className="mt-0.5 text-[12px] text-[var(--color-muted)]">{pctOff}% off retail on this order</p>
         </div>
         <p className="num text-[34px] leading-none text-[var(--color-brass)]" data-savings-total>
@@ -239,12 +239,12 @@ export function SavingsBreakdown({
       <dl className="mt-3.5 space-y-2 border-t border-[var(--color-brass)]/20 pt-3 text-[14px]">
         <div className="flex items-center justify-between gap-3">
           <dt className="flex items-center gap-2.5">{chip(`−${MEMBER_SAVE_PCT}%`)} Member prices</dt>
-          <dd className="tnum font-semibold text-[var(--color-brass)]">−{money(memberOff)}</dd>
+          <dd className="tnum font-medium text-[var(--color-brass)]">−{money(memberOff)}</dd>
         </div>
         {t.boxed ? (
           <div className="flex items-center justify-between gap-3" data-box-line>
             <dt className="flex items-center gap-2.5">{chip(`−${BOX.pct}%`)} Box of {t.count}</dt>
-            <dd className="tnum font-semibold text-[var(--color-brass)]">−{money(t.box)}</dd>
+            <dd className="tnum font-medium text-[var(--color-brass)]">−{money(t.box)}</dd>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3 text-[var(--color-muted)]">
@@ -255,7 +255,7 @@ export function SavingsBreakdown({
         {subscribe && subscribe.amount > 0 && (
           <div className="flex items-center justify-between gap-3" data-subscribe-line>
             <dt className="flex items-center gap-2.5">{chip(`−${subscribe.pct}%`)} Subscribe &amp; Save</dt>
-            <dd className="tnum font-semibold text-[var(--color-brass)]">−{money(subscribe.amount)}</dd>
+            <dd className="tnum font-medium text-[var(--color-brass)]">−{money(subscribe.amount)}</dd>
           </div>
         )}
       </dl>

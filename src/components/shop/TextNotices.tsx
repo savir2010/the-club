@@ -37,7 +37,7 @@ function Notice({ n, dismiss, openCart }: { n: TextNotice; dismiss: (key: string
   return (
     <div
       data-text-notice={n.kind}
-      className="pointer-events-auto w-full animate-[fade-up_320ms_var(--ease-out)_both] rounded-[var(--radius-card)] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-4 shadow-[0_18px_40px_-20px_rgb(43_38_31/0.5)]"
+      className="pointer-events-auto w-full animate-[fade-up_320ms_var(--ease-out)_both] rounded-[var(--radius-card)] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-4 shadow-[0_18px_40px_-20px_rgb(17_17_17/0.5)]"
     >
       <div className="flex items-center gap-2.5">
         <NoraAvatar size={28} />
@@ -56,14 +56,14 @@ function Notice({ n, dismiss, openCart }: { n: TextNotice; dismiss: (key: string
           <p className="tnum mt-1 text-[13px] text-[var(--color-muted)]">
             {n.order.items} item{n.order.items === 1 ? "" : "s"} · ${n.order.total.toFixed(2)} with tax · arriving {n.order.day.toLowerCase()} {n.order.window}
           </p>
-          <Link href={n.order.path} onClick={onClose} className="btn btn-sm btn-primary mt-3 h-9 w-full rounded-full">
+          <Link href={n.order.path} onClick={onClose} className="btn btn-sm btn-primary mt-3 h-9 w-full">
             Track your order
           </Link>
         </div>
       ) : (
         p && (
           <div className="mt-3 flex items-center gap-3">
-            <span className="size-12 shrink-0 overflow-hidden rounded-[10px] bg-white ring-1 ring-[var(--color-hairline)]">
+            <span className="size-12 shrink-0 overflow-hidden bg-[var(--color-plate)] ring-1 ring-[var(--color-hairline)]">
               <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
             </span>
             <div className="min-w-0 flex-1">
@@ -75,7 +75,7 @@ function Notice({ n, dismiss, openCart }: { n: TextNotice; dismiss: (key: string
             </div>
             {n.kind === "add" && (
               <button
-                className="btn btn-sm btn-outline h-8 shrink-0 rounded-full px-3"
+                className="btn btn-sm btn-outline h-8 shrink-0 px-3"
                 onClick={() => {
                   openCart();
                   onClose();

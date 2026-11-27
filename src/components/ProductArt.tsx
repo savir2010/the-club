@@ -1,4 +1,4 @@
-import type { Category } from "@/lib/data";
+import { plateImage, type Category } from "@/lib/data";
 
 // Authored placeholder art: one vessel per category, drawn on a tonal plinth.
 // Swap for real product photography on plain backgrounds when the client's menu arrives.
@@ -6,8 +6,8 @@ import type { Category } from "@/lib/data";
 const GLASS = "#c9b493";
 const GLASS_HI = "#e6d9c2";
 const LID = "#3a322a";
-const LABEL = "#fffdf9";
-const BRASS = "#8d6b3d";
+const LABEL = "#FAF9F6";
+const BRASS = "#111111";
 
 function Label({ x, y, w, h, letter }: { x: number; y: number; w: number; h: number; letter: string }) {
   return (
@@ -19,10 +19,10 @@ function Label({ x, y, w, h, letter }: { x: number; y: number; w: number; h: num
         y={y + (h - 4) / 2 + 0.5}
         textAnchor="middle"
         dominantBaseline="central"
-        fontFamily="var(--font-manrope), sans-serif"
+        fontFamily="var(--font-cormorant), sans-serif"
         fontSize={Math.min(14, h * 0.55)}
         fontWeight={600}
-        fill="#2b261f"
+        fill="#111111"
       >
         {letter}
       </text>
@@ -99,12 +99,12 @@ function Vessel({ category, letter }: { category: Category; letter: string }) {
           <ellipse cx={100} cy={128} rx={40} ry={10} fill={GLASS_HI} />
           <ellipse cx={100} cy={120} rx={40} ry={10} fill={LID} />
           <rect x={60} y={112} width={80} height={8} fill={LID} />
-          <ellipse cx={100} cy={112} rx={40} ry={10} fill="#2b261f" />
+          <ellipse cx={100} cy={112} rx={40} ry={10} fill="#111111" />
           <text
             x={100}
             y={116}
             textAnchor="middle"
-            fontFamily="var(--font-manrope), sans-serif"
+            fontFamily="var(--font-cormorant), sans-serif"
             fontSize={13}
             fontWeight={600}
             fill="#ffffff"
@@ -130,19 +130,19 @@ export function ProductArt({
   label?: string;
   /** "front" frames the vessel on its plinth; "close" crops in on the label. */
   view?: "front" | "close";
-  /** Product photo. When set it is shown on white in place of the drawn vessel. */
+  /** Product photo. When set its editorial plate (warm ground, 4:5) is shown in place of the drawn vessel. */
   image?: string;
 }) {
   if (image) {
     return (
-      <span className={`block overflow-hidden bg-white ${className}`} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+      <span className={`block overflow-hidden bg-[var(--color-plate)] ${className}`} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={image}
+          src={plateImage(image)}
           alt=""
           loading="lazy"
           decoding="async"
-          className={`size-full object-contain ${view === "close" ? "scale-[1.7]" : "p-[6%]"}`}
+          className={`size-full object-cover ${view === "close" ? "scale-[1.6]" : ""}`}
         />
       </span>
     );
@@ -159,13 +159,13 @@ export function ProductArt({
     >
       <defs>
         <radialGradient id={`plinth-light`} cx="50%" cy="35%" r="70%">
-          <stop offset="0%" style={{ stopColor: "var(--art-plinth-hi, #fffdf9)" }} />
-          <stop offset="100%" style={{ stopColor: "var(--art-plinth-lo, #efe6d8)" }} />
+          <stop offset="0%" style={{ stopColor: "var(--art-plinth-hi, #FAF9F6)" }} />
+          <stop offset="100%" style={{ stopColor: "var(--art-plinth-lo, #F3F0E9)" }} />
         </radialGradient>
       </defs>
       <rect width="200" height="200" fill="url(#plinth-light)" />
       <rect y="156" width="200" height="44" style={{ fill: "var(--art-floor, #e6dbc8)" }} />
-      <line x1="0" y1="156" x2="200" y2="156" stroke="#2b261f" strokeOpacity={0.08} />
+      <line x1="0" y1="156" x2="200" y2="156" stroke="#111111" strokeOpacity={0.08} />
       <ellipse cx="100" cy="158" rx="54" ry="5" fill="#5a4426" opacity={0.14} />
       <Vessel category={category} letter={letter} />
     </svg>

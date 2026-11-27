@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Check, Mic, Minus, RotateCcw, X } from "lucide-react";
+import { ArrowUp, Check, Mic, Minus, RotateCcw } from "lucide-react";
 import { sentenceSplitter, useVoice } from "./voice";
 import { MEMBER, PERSONA, bundleFor, byId, money } from "@/lib/data";
 import type { NoraEvent, Pick } from "@/lib/agent/events";
@@ -32,8 +32,8 @@ function PickCard({ id, reason }: { id: string; reason: string }) {
   const inCart = lines.some((l) => l.id === id);
   const b = bundleFor(p);
   return (
-    <article data-pick-card={p.id} className="grid grid-cols-[64px_1fr] gap-3 rounded-[12px] border border-[var(--color-hairline)] bg-[var(--color-canvas)] p-2.5">
-      <Link data-pick-art={p.id} href={`/shop/${p.id}`} className="aspect-square overflow-hidden rounded-[8px]" aria-label={`View ${p.name}`}>
+    <article data-pick-card={p.id} className="grid grid-cols-[64px_1fr] gap-3 rounded-none border border-[var(--color-hairline)] bg-[var(--color-canvas)] p-2.5">
+      <Link data-pick-art={p.id} href={`/shop/${p.id}`} className="aspect-square overflow-hidden rounded-none" aria-label={`View ${p.name}`}>
         <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
       </Link>
       <div className="min-w-0">
@@ -46,7 +46,7 @@ function PickCard({ id, reason }: { id: string; reason: string }) {
         <p className="mt-1 text-[13px] leading-snug text-[var(--color-ivory)]/85">{reason}</p>
         {!p.in_stock && <p className="mt-1 text-[12px] font-medium text-[var(--color-clay)]">Out of stock</p>}
         <div className="mt-2 flex items-end justify-between gap-2">
-          <ProductPrice p={p} size={20} />
+          <ProductPrice p={p} size={15} />
           {inCart ? (
             <span className="inline-flex items-center gap-1 text-[13px] text-[var(--color-muted)]">
               <Check size={14} className="text-[var(--color-brass)]" aria-hidden /> In cart
@@ -75,7 +75,7 @@ function StatusLine({ id, text }: { id: string; text: string }) {
   const p = byId(id);
   return (
     <p className="chat-part mt-2 flex items-center gap-2.5 text-[13px] text-[var(--color-muted)]">
-      <span data-status-art={id} className="size-8 shrink-0 overflow-hidden rounded-[6px] border border-[var(--color-hairline)]">
+      <span data-status-art={id} className="size-8 shrink-0 overflow-hidden rounded-none border border-[var(--color-hairline)]">
         <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
       </span>
       <Check size={14} className="shrink-0 text-[var(--color-brass)]" aria-hidden />
@@ -373,27 +373,6 @@ export function NoraChat() {
     }
   }, [chatOpen, busy, greeting]);
 
-  // The hook over the launcher: appears a moment after the page settles, until the chat is opened or dismissed.
-  const [hook, setHook] = useState(false);
-  useEffect(() => {
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem("club-nora-hook") === "1";
-    } catch {}
-    if (seen) return;
-    const t = window.setTimeout(() => setHook(true), 1400);
-    return () => window.clearTimeout(t);
-  }, []);
-  const dismissHook = () => {
-    setHook(false);
-    try {
-      sessionStorage.setItem("club-nora-hook", "1");
-    } catch {}
-  };
-  useEffect(() => {
-    if (chatOpen) dismissHook();
-  }, [chatOpen]);
-
   const micLabel = !voice.supported
     ? "Voice needs Chrome, Edge or Safari"
     : voice.state === "speaking"
@@ -412,36 +391,16 @@ export function NoraChat() {
     <>
       {pointer.node}
 
-      {hook && !mounted && (
-        <div className="fixed right-5 bottom-[88px] z-40 w-[264px] animate-[hook-in_520ms_cubic-bezier(0.34,1.4,0.64,1)_both] sm:right-6">
-          <div className="relative rounded-[18px] rounded-br-[6px] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] shadow-[var(--shadow-float)]">
-            <button onClick={() => setChatOpen(true)} className="block w-full px-4 pt-3.5 pb-3.5 pr-9 text-left">
-              <span className="block text-[12px] font-semibold text-[var(--color-brass)]">{PERSONA.name} · your concierge</span>
-              <span className="mt-1 block text-[14px] leading-snug">{greeting}</span>
-            </button>
-            <button
-              onClick={dismissHook}
-              className="absolute top-2 right-2 grid size-7 place-items-center rounded-full text-[var(--color-faint)] hover:bg-[var(--color-raised-2)] hover:text-[var(--color-ivory)]"
-              aria-label="Dismiss"
-            >
-              <X size={14} aria-hidden />
-            </button>
-            {/* tail, pointing down at her */}
-            <span className="absolute -bottom-[7px] right-7 size-3.5 rotate-45 border-r border-b border-[var(--color-hairline-strong)] bg-[var(--color-raised)]" aria-hidden />
-          </div>
-        </div>
-      )}
-
       <button
         onClick={() => setChatOpen(true)}
         aria-hidden={mounted}
         tabIndex={mounted ? -1 : 0}
-        className={`launcher-ring group fixed right-5 bottom-5 z-40 flex origin-bottom-right items-center gap-3 rounded-full border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-1.5 pr-1.5 shadow-[var(--shadow-float)] transition-[transform,opacity,box-shadow] ease-[cubic-bezier(0.34,1.4,0.64,1)] hover:-translate-y-0.5 hover:shadow-[0_22px_52px_-12px_rgb(60_44_20/0.24)] active:scale-95 sm:pr-5 ${
+        className={`launcher-ring group fixed right-5 bottom-5 z-40 flex origin-bottom-right items-center gap-3.5 rounded-full border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-1.5 pr-1.5 shadow-[var(--shadow-float)] transition-[transform,opacity,box-shadow] ease-[var(--ease-out)] hover:-translate-y-0.5 active:scale-95 sm:rounded-none sm:py-2 sm:pr-6 sm:pl-2 ${
           mounted ? "pointer-events-none scale-50 opacity-0 duration-200" : "scale-100 opacity-100 delay-150 duration-500"
         }`}
         aria-label={`Ask ${PERSONA.name}, your concierge`}
       >
-        <NoraAvatar size={52} status />
+        <NoraAvatar size={44} status />
         <span className="hidden text-left sm:block">
           <span className="display block text-[19px] leading-none">Ask {PERSONA.name}</span>
           <span className="mt-1 block text-[12px] text-[var(--color-muted)]">Your concierge</span>
@@ -454,7 +413,7 @@ export function NoraChat() {
           aria-label={`Conversation with ${PERSONA.name}`}
           data-leaving={leaving}
           ref={panel}
-          className="chat-window fixed inset-x-0 bottom-0 z-40 flex h-[88dvh] flex-col overflow-hidden rounded-t-[20px] border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] shadow-[var(--shadow-float)] sm:inset-x-auto sm:right-5 sm:bottom-5 sm:h-[min(720px,calc(100dvh-110px))] sm:w-[420px] sm:rounded-[20px]"
+          className="chat-window fixed inset-x-0 bottom-0 z-40 flex h-[88dvh] flex-col overflow-hidden rounded-t-none border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] shadow-[var(--shadow-float)] sm:inset-x-auto sm:right-5 sm:bottom-5 sm:h-[min(720px,calc(100dvh-110px))] sm:w-[420px] sm:rounded-none"
         >
           <header className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--color-hairline)] px-4 py-3">
             <div className="flex items-center gap-3">
@@ -497,7 +456,7 @@ export function NoraChat() {
               if (m.from === "member") {
                 return (
                   <li key={i} className="chat-part flex justify-end" style={style}>
-                    <p className="max-w-[82%] rounded-[16px] rounded-br-[4px] bg-[var(--color-raised-2)] px-3.5 py-2.5 text-[14px] leading-relaxed">{m.text}</p>
+                    <p className="max-w-[82%] rounded-none rounded-br-[4px] bg-[var(--color-raised-2)] px-3.5 py-2.5 text-[14px] leading-relaxed">{m.text}</p>
                   </li>
                 );
               }

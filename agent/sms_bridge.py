@@ -1,4 +1,8 @@
-"""Live iMessage bridge: people text this Mac, and Nora answers as herself.
+"""Live texting bridge: people text Nora, and she answers as herself.
+
+Two ways to carry the texts (NORA_SMS_PROVIDER):
+  imessage (default)  Messages on this Mac; it reads chat.db and sends with AppleScript.
+  twilio              Twilio SMS (twilio_sms.py); incoming texts arrive on a webhook.
 
 Run on the Mac that plays Nora (Messages signed in, Full Disk Access for the terminal):
     npm run nora-sms
@@ -23,12 +27,15 @@ from urllib.parse import quote
 import cart_store
 import config
 import shop
+import twilio_sms
 from imessage import CHAT_DB, SEND, _decode_body, _query
 
 log = logging.getLogger("nora.sms")
 
 ALLOW = [n.strip() for n in os.getenv("NORA_SMS_ALLOW", "").split(",") if n.strip()]
-NORA_NUMBER = os.getenv("NORA_SMS_NUMBER", "").strip()  # shown on the site: "Text Nora at ..."
+PROVIDER = "twilio" if os.getenv("NORA_SMS_PROVIDER", "").strip().lower() == "twilio" else "imessage"
+# Shown on the site: "Text Nora at ...". With Twilio it's the Twilio number.
+NORA_NUMBER = (twilio_sms.FROM if PROVIDER == "twilio" else "") or os.getenv("NORA_SMS_NUMBER", "").strip()
 DRY_RUN = os.getenv("NORA_SMS_DRY_RUN", "") == "1"  # print replies instead of texting (for testing)
 # Cart changes from real texts are tagged "sms" and the website announces them. Rehearsal texts
 # (dry run) get a different tag so the website never shows a text that didn't really happen.
@@ -90,6 +97,8 @@ def learn_public_url(origin: str) -> None:
     if os.getenv("NORA_PUBLIC_URL") or not origin.startswith("https://"):
         return
     state["public_url"] = origin
+    if PROVIDER == "twilio" and state["active"] and not DRY_RUN:
+        twilio_sms.point_webhook(origin)
 
 
 def _send(handle: str, text: str) -> None:
@@ -99,6 +108,9 @@ def _send(handle: str, text: str) -> None:
     if DRY_RUN:
         state["outbox"].append({"to": handle, "text": text})
         log.info("[dry run] to %s: %s", handle, text)
+        return
+    if PROVIDER == "twilio":
+        twilio_sms.send(handle, text)
         return
     r = subprocess.run(["osascript", "-e", SEND, handle, text], capture_output=True, text=True, timeout=30)
     if r.returncode != 0:
@@ -272,7 +284,7 @@ async def _loop() -> None:
     try:
         while state["active"]:
             batch: dict[str, list[str]] = {}
-            if not DRY_RUN:
+            if not DRY_RUN and PROVIDER == "imessage":
                 for handle, msg in await asyncio.to_thread(_new_messages):
                     batch.setdefault(handle, []).append(msg)
             while _inbox and not _inbox.empty():
@@ -303,7 +315,13 @@ def start(turn: TurnFn) -> dict:
     _turn = turn
     _inbox = asyncio.Queue()
     state.update(active=True, replies=0, error=None, outbox=[])
-    if not DRY_RUN:
+    if PROVIDER == "twilio" and not DRY_RUN:
+        if not twilio_sms.configured():
+            state["active"] = False
+            raise RuntimeError("Twilio isn't set up: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_FROM_NUMBER are needed.")
+        if state["public_url"]:
+            twilio_sms.point_webhook(state["public_url"])
+    elif not DRY_RUN:
         try:
             state["since_rowid"] = _latest_rowid()
         except Exception as ex:
@@ -356,6 +374,17 @@ async def send_weekly() -> dict:
     return {"ok": True, "sent_to": len(handles[-3:])}
 
 
+def receive_twilio(handle: str, text: str) -> bool:
+    """A text that arrived on the Twilio webhook. Only allowed numbers reach Nora."""
+    if PROVIDER != "twilio" or not state["active"] or not _inbox or not text.strip():
+        return False
+    if not _allowed(handle):
+        log.info("ignored a text from %s (not registered)", handle)
+        return False
+    _inbox.put_nowait((handle, text.strip()[:2000]))
+    return True
+
+
 def inject(handle: str, text: str) -> None:
     """Dry run only: pretend `handle` texted `text`."""
     if not DRY_RUN:
@@ -369,7 +398,8 @@ def inject(handle: str, text: str) -> None:
 
 def status() -> dict:
     return {
-        "active": state["active"], "dry_run": DRY_RUN, "nora_number": NORA_NUMBER,
+        "active": state["active"], "dry_run": DRY_RUN, "provider": PROVIDER, "nora_number": NORA_NUMBER,
+        **({"twilio_inbound": twilio_sms.inbound} if PROVIDER == "twilio" else {}),
         "allow": ALLOW, "registered": state["registered"], "public_url": state["public_url"],
         "replies": state["replies"], "max_replies": MAX_REPLIES, "threads": len(state["threads"]),
         "orders": state["orders"], "error": state["error"], **({"outbox": state["outbox"]} if DRY_RUN else {}),

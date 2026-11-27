@@ -12,10 +12,10 @@ function Corners() {
   const c = "absolute size-6 border-[var(--color-brass)]";
   return (
     <>
-      <span className={`${c} top-3 left-3 rounded-tl-[10px] border-t-2 border-l-2`} />
-      <span className={`${c} top-3 right-3 rounded-tr-[10px] border-t-2 border-r-2`} />
-      <span className={`${c} bottom-3 left-3 rounded-bl-[10px] border-b-2 border-l-2`} />
-      <span className={`${c} right-3 bottom-3 rounded-br-[10px] border-r-2 border-b-2`} />
+      <span className={`${c} top-3 left-3 border-t border-l`} />
+      <span className={`${c} top-3 right-3 border-t border-r`} />
+      <span className={`${c} bottom-3 left-3 border-b border-l`} />
+      <span className={`${c} right-3 bottom-3 border-r border-b`} />
     </>
   );
 }
@@ -53,7 +53,7 @@ export function CaptureFrame({
           setOver(false);
           take(e.dataTransfer.files?.[0]);
         }}
-        className={`relative aspect-[1.586] w-full overflow-hidden rounded-[16px] border transition-colors ${
+        className={`relative aspect-[1.586] w-full overflow-hidden rounded-none border transition-colors ${
           over ? "border-[var(--color-brass)] bg-[var(--color-brass)]/6" : image ? "border-[var(--color-hairline-strong)]" : "border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-raised)]"
         }`}
       >
@@ -77,7 +77,7 @@ export function CaptureFrame({
 
         <Corners />
         {scanning && (
-          <span className="scan-line pointer-events-none absolute inset-x-4 h-[2px] rounded-full bg-[var(--color-brass)] shadow-[0_0_16px_4px_rgb(141_107_61/0.45)]" aria-hidden />
+          <span className="scan-line pointer-events-none absolute inset-x-4 h-[2px] rounded-full bg-[var(--color-brass)] shadow-[0_0_16px_4px_rgb(17_17_17/0.45)]" aria-hidden />
         )}
         <input ref={input} id={id} type="file" accept="image/*" className="sr-only" tabIndex={-1} onChange={(e) => take(e.target.files?.[0])} />
       </div>
@@ -240,28 +240,28 @@ export function ResultCard({ title, rows, note }: { title: string; rows: [string
 export function SampleId({ back = false }: { back?: boolean }) {
   if (back) {
     return (
-      <div className="flex size-full flex-col justify-between bg-[linear-gradient(135deg,#f3ede2,#e6dccb)] p-[6%]">
-        <div className="h-[18%] rounded-[4px] bg-[repeating-linear-gradient(90deg,#2b261f_0_2px,transparent_2px_5px,#2b261f_5px_6px,transparent_6px_9px)] opacity-80" />
+      <div className="flex size-full flex-col justify-between bg-[linear-gradient(135deg,#F3F0E9,#e6dccb)] p-[6%]">
+        <div className="h-[18%] rounded-[4px] bg-[repeating-linear-gradient(90deg,#111111_0_2px,transparent_2px_5px,#111111_5px_6px,transparent_6px_9px)] opacity-80" />
         <div className="space-y-[3%]">
           {[90, 72, 84].map((w) => (
-            <div key={w} className="h-[5px] rounded bg-[#2b261f]/15" style={{ width: `${w}%` }} />
+            <div key={w} className="h-[5px] rounded bg-[#111111]/15" style={{ width: `${w}%` }} />
           ))}
         </div>
-        <p className="text-[10px] tracking-[0.2em] text-[#2b261f]/50">SAMPLE · NOT A VALID ID</p>
+        <p className="text-[10px] tracking-[0.2em] text-[#111111]/50">SAMPLE · NOT A VALID ID</p>
       </div>
     );
   }
   return (
-    <div className="relative size-full bg-[linear-gradient(135deg,#f6f0e4,#e9dcc3)] p-[5.5%] text-[#2b261f]">
+    <div className="relative size-full bg-[linear-gradient(135deg,#F3F0E9,#e9dcc3)] p-[5.5%] text-[#111111]">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-semibold tracking-[0.18em]">IDENTIFICATION CARD</p>
-        <p className="rounded-[4px] bg-[#8d6b3d] px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.15em] text-white">SAMPLE</p>
+        <p className="rounded-[4px] bg-[#111111] px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.15em] text-white">SAMPLE</p>
       </div>
       <div className="mt-[5%] flex gap-[5%]">
-        <div className="aspect-[3/4] w-[28%] rounded-[6px] bg-[linear-gradient(180deg,#d8c7aa,#bfa985)]">
+        <div className="aspect-[3/4] w-[28%] rounded-none bg-[linear-gradient(180deg,#d8c7aa,#bfa985)]">
           <svg viewBox="0 0 30 40" className="size-full opacity-60" aria-hidden>
-            <circle cx="15" cy="15" r="7" fill="#8d6b3d" />
-            <path d="M3 40c1-9 6-13 12-13s11 4 12 13z" fill="#8d6b3d" />
+            <circle cx="15" cy="15" r="7" fill="#111111" />
+            <path d="M3 40c1-9 6-13 12-13s11 4 12 13z" fill="#111111" />
           </svg>
         </div>
         <dl className="grid flex-1 grid-cols-2 content-start gap-x-3 gap-y-[2%] text-[10px] leading-tight">

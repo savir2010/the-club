@@ -31,9 +31,9 @@ export default function Account() {
         <p className="mt-2 text-[var(--color-muted)]">
           Member since {MEMBER.since} · {MEMBER.plan}
         </p>
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-panel)] bg-[#17130f] px-7 py-6 text-[#f3ece0]" data-saved>
-          <p className="num text-[44px] leading-none text-[#e6c992]">{money(MEMBER_SAVED)}</p>
-          <p className="max-w-[48ch] text-[15px] leading-snug text-[#d8cdb9]">
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 bg-[var(--color-ivory)] text-[var(--color-canvas)] px-8 py-7" data-saved>
+          <p className="display text-[52px] leading-none">{money(MEMBER_SAVED)}</p>
+          <p className="max-w-[48ch] text-[15px] leading-snug opacity-75">
             saved as a member since {MEMBER.since.split(" ")[0]}, across {PAST_ORDERS.length} orders. Delivery was free every time.
           </p>
         </div>

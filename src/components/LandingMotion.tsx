@@ -1,49 +1,63 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import MoltenMetal from "./MoltenMetal";
-
-/** True when WebGL runs on a software renderer (no GPU) or is missing entirely. */
-function softwareRendered(): boolean {
-  try {
-    const gl = document.createElement("canvas").getContext("webgl2");
-    if (!gl) return true;
-    const info = gl.getExtension("WEBGL_debug_renderer_info");
-    const name = String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
-    gl.getExtension("WEBGL_lose_context")?.loseContext();
-    return /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic/i.test(name);
-  } catch {
-    return true;
-  }
-}
 
 /**
- * Landing-only molten brass layer, fixed behind the page.
- * As the visitor scrolls it dims, cools and turns slowly; the hero copy lifts away.
- * Without a GPU it renders one frame and holds still.
+ * Landing-only cinematic layer: the graded aerial film of the estate, fixed behind the page.
+ * As the visitor scrolls, the film slowly settles (a gentle zoom) and an off-white veil rises over it;
+ * open sections later in the page let it show through again.
+ * The film always plays (muted, inline, looping); reduced motion only turns off the scroll zoom.
+ * If the browser refuses to play it (Low Power Mode, Save-Data), the still poster stays.
  */
 export function LandingBackground() {
-  const [software, setSoftware] = useState<boolean | null>(null);
-  const [progress, setProgress] = useState(0);
+  const video = useRef<HTMLVideoElement>(null);
   const veil = useRef<HTMLDivElement>(null);
+  const film = useRef<HTMLDivElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
+  // Pick the encode for the screen; skip the film only when the visitor has asked to save data.
   useEffect(() => {
-    setSoftware(softwareRendered());
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (saveData) return;
+    const wide = window.matchMedia("(min-width: 900px) and (min-resolution: 1.5dppx), (min-width: 1300px)").matches;
+    setSrc(wide ? "/media/hero-1080.mp4" : "/media/hero-720.mp4");
   }, []);
 
   useEffect(() => {
+    const v = video.current;
+    if (!v || !src) return;
+    // React doesn't reliably write the muted attribute, and Safari refuses unmuted autoplay
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute("muted", "");
+    const tryPlay = () => v.play().catch(() => {});
+    tryPlay();
+    // some browsers only allow playback after the first interaction; retry then
+    const onFirst = () => tryPlay();
+    window.addEventListener("pointerdown", onFirst, { once: true });
+    window.addEventListener("touchstart", onFirst, { once: true, passive: true });
+    // pause when the tab is hidden; resume when it returns
+    const onVis = () => (document.hidden ? v.pause() : v.play().catch(() => {}));
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pointerdown", onFirst);
+      window.removeEventListener("touchstart", onFirst);
+    };
+  }, [src]);
+
+  useEffect(() => {
     let raf = 0;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const update = () => {
       raf = 0;
       const vh = window.innerHeight || 1;
       const y = window.scrollY;
-      // 0 at the top, 1 after one viewport of scrolling
       const hero = Math.min(1, y / vh);
       document.documentElement.style.setProperty("--hero-out", hero.toFixed(3));
-      if (veil.current) veil.current.style.opacity = (hero * 0.4).toFixed(3);
-      // coarse steps keep shader re-renders cheap
-      const total = Math.max(1, document.documentElement.scrollHeight - vh);
-      setProgress(Math.round((y / total) * 40) / 40);
+      if (veil.current) veil.current.style.opacity = (hero * 0.12).toFixed(3);
+      if (film.current && !still) film.current.style.transform = `scale(${(1.04 + hero * 0.06).toFixed(4)})`;
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -59,36 +73,32 @@ export function LandingBackground() {
     };
   }, []);
 
-  if (software === null) return null;
-
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 bg-[var(--color-canvas)]" aria-hidden>
-      <MoltenMetal
-        colors={["#efe4d2", "#d9bf95", "#b8925a", "#8d6b3d"]}
-        coreColor="#fffaf0"
-        lightMode
-        speed={0.24}
-        scale={2.8}
-        detail={software ? 2.5 : 3.5}
-        glow={1.6}
-        thickness={1.05}
-        haze={0.7}
-        brightness={1.25}
-        grain={0.04}
-        rotation={progress * 28}
-        offsetY={progress * -0.18}
-        opacity={1 - progress * 0.35}
-        drift={0.22}
-        mouseInteraction={!software}
-        mouseStrength={0.35}
-        flareOnClick={false}
-        paused={software}
-        intro={!software}
-        dpr={software ? 0.6 : 1.25}
-      />
-      {/* vignette keeps the centre calm behind the headline and deepens the edges */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_42%_at_50%_45%,rgb(247_242_234/0.72)_0%,rgb(247_242_234/0.2)_65%,rgb(247_242_234/0)_100%)]" />
-      <div ref={veil} className="absolute inset-0 bg-[var(--color-canvas)]" style={{ opacity: 0 }} />
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#242424]" aria-hidden>
+      {/* one notch under the full grade: still vivid, a little calmer (tune saturate/brightness here) */}
+      <div ref={film} className="absolute inset-0 will-change-transform [filter:saturate(0.86)_brightness(0.95)_contrast(1.02)]" style={{ transform: "scale(1.04)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/media/hero-poster.jpg" alt="" className="absolute inset-0 size-full object-cover" />
+        {src && (
+          <video
+            ref={video}
+            src={src}
+            poster="/media/hero-poster.jpg"
+            muted
+            loop
+            playsInline
+            autoPlay
+            preload="auto"
+            onPlaying={() => setReady(true)}
+            className="absolute inset-0 size-full object-cover transition-opacity duration-[1400ms] ease-[var(--ease-out)]"
+            style={{ opacity: ready ? 1 : 0 }}
+          />
+        )}
+      </div>
+      <div className="absolute inset-0 bg-[#111111]/[0.06]" />
+      {/* legibility only: a light shade behind the header and a deeper one where the headline sits; the film's colour stays full */}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(17_17_17/0.42)_0%,rgb(17_17_17/0)_18%,rgb(17_17_17/0)_48%,rgb(17_17_17/0.66)_100%)]" />
+      <div ref={veil} className="absolute inset-0 bg-[#111111]" style={{ opacity: 0 }} />
     </div>
   );
 }
@@ -108,7 +118,7 @@ export function RevealOnScroll() {
           }
         }
       },
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.08 },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.06 },
     );
     // only hide what is still below the fold, so nothing visible ever blinks out
     for (const n of nodes) {

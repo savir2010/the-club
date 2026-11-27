@@ -24,6 +24,7 @@ export function middleware(req: NextRequest) {
 export const config = {
   // Node.js, not Edge: Vercel services don't support Edge functions
   runtime: "nodejs",
-  // everything except Next's own static files and the favicon
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // everything except Next's own static files, the favicon, and Twilio's webhook for texts to Nora
+  // (Twilio can't log in; the agent checks Twilio's signature on every request instead)
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/nora/sms/twilio).*)"],
 };

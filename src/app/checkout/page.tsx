@@ -47,7 +47,7 @@ function Welcome({ savings, onContinue }: { savings: number; onContinue: () => v
     <div className="flex min-h-[480px] flex-col items-start justify-center">
       <div className="relative grid size-[112px] place-items-center">
         <span className="absolute inset-0 rounded-full border border-[var(--color-brass)] motion-safe:animate-[ring-out_1400ms_var(--ease-out)_300ms_both]" aria-hidden />
-        <span className="grid size-[112px] place-items-center rounded-full bg-[var(--color-raised)] ring-1 ring-[var(--color-brass)]/50 shadow-[var(--shadow-float)] motion-safe:animate-[seal-in_700ms_var(--ease-out)_both]">
+        <span className="grid size-[112px] place-items-center rounded-full bg-[var(--color-raised)] ring-1 ring-[var(--color-brass)]/50 motion-safe:animate-[seal-in_700ms_var(--ease-out)_both]">
           <Monogram size={72} />
         </span>
       </div>
@@ -64,7 +64,7 @@ function Welcome({ savings, onContinue }: { savings: number; onContinue: () => v
         )}
         . Next, choose where and when it arrives.
       </p>
-      <button className="btn btn-lg btn-primary mt-9 rounded-full motion-safe:animate-[fade-up_500ms_var(--ease-out)_550ms_both]" onClick={onContinue}>
+      <button className="btn btn-lg btn-primary mt-9 motion-safe:animate-[fade-up_500ms_var(--ease-out)_550ms_both]" onClick={onContinue}>
         Continue to delivery
       </button>
     </div>
@@ -84,7 +84,7 @@ function GateSummary({ joined = false }: { joined?: boolean }) {
             const p = byId(l.id);
             return (
               <li key={l.id} className="grid grid-cols-[48px_1fr_auto] items-center gap-3">
-                <span className="size-12 overflow-hidden rounded-[8px] ring-1 ring-[var(--color-hairline)]">
+                <span className="size-12 overflow-hidden rounded-none ring-1 ring-[var(--color-hairline)]">
                   <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
                 </span>
                 <span className="min-w-0">
@@ -107,7 +107,7 @@ function GateSummary({ joined = false }: { joined?: boolean }) {
           </div>
           <div className="flex items-baseline justify-between border-t border-[var(--color-hairline)] pt-4">
             <dt className="flex items-center gap-2 font-medium">
-              <span className="inline-flex h-[18px] items-center rounded-[4px] bg-[var(--color-brass)] px-1.5 text-[10px] font-bold tracking-[0.08em] text-[var(--color-on-brass)] uppercase">Club</span>
+              <span className="inline-flex h-[18px] items-center rounded-[4px] bg-[var(--color-brass)] px-1.5 text-[10px] font-medium tracking-[0.08em] text-[var(--color-on-brass)] uppercase">Club</span>
               Member price
               {joined && <Check size={15} strokeWidth={2.5} className="text-[var(--color-brass)]" aria-label="applied" />}
             </dt>
@@ -115,7 +115,7 @@ function GateSummary({ joined = false }: { joined?: boolean }) {
           </div>
         </dl>
         <SavingsBreakdown lines={lines} pitch={!joined} className="mt-5" />
-        <p className="mt-6 rounded-[10px] bg-[var(--color-canvas)] p-3.5 text-[13px] leading-relaxed text-[var(--color-muted)]">
+        <p className="mt-6 rounded-none bg-[var(--color-canvas)] p-3.5 text-[13px] leading-relaxed text-[var(--color-muted)]">
           {joined ? "Next, choose where and when it arrives. Tax and tip are added there." : "Finish joining to choose a delivery window and pay. Tax and tip are added on the next step."}
         </p>
       </div>
@@ -242,11 +242,11 @@ export default function Checkout() {
       <ThemeSync />
       {pointer.node}
       {nora && (
-        <div role="status" className="fixed bottom-5 left-1/2 z-[96] flex -translate-x-1/2 animate-[fade-up_260ms_var(--ease-out)_both] items-center gap-3 rounded-full border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] py-1.5 pr-1.5 pl-2 shadow-[var(--shadow-float)]">
+        <div role="status" className="fixed bottom-5 left-1/2 z-[96] flex -translate-x-1/2 animate-[fade-up_260ms_var(--ease-out)_both] items-center gap-3 border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] py-2 pr-4 pl-2 shadow-[var(--shadow-float)]">
           <NoraAvatar size={30} status />
           <span className="text-[14px]">{nora}</span>
           <button
-            className="btn btn-sm btn-outline h-8 rounded-full px-3 text-[13px]"
+            className="btn btn-sm btn-outline h-8 px-3 text-[13px]"
             onClick={() => {
               stopped.current = true;
               setNora(null);
@@ -256,8 +256,8 @@ export default function Checkout() {
           </button>
         </div>
       )}
-      <header className="bar">
-        <div className="mx-auto flex h-[64px] max-w-[1320px] items-center justify-between gap-4 px-5 md:px-10">
+      <header className="bar border-b border-[var(--color-hairline)]">
+        <div className="container-club flex h-[76px] items-center justify-between gap-4">
           <Wordmark href="/shop" />
           <ol className="hidden items-center gap-2 text-[13px] md:flex" aria-label="Checkout steps">
             {[
@@ -268,7 +268,7 @@ export default function Checkout() {
               <li key={x.k} className="flex items-center gap-2">
                 {i > 0 && <span className="h-px w-8 bg-[var(--color-hairline-strong)]" aria-hidden />}
                 <span
-                  className={`grid size-6 place-items-center rounded-full text-[11px] font-bold ${
+                  className={`grid size-6 place-items-center rounded-full text-[11px] font-medium ${
                     x.done ? "bg-[var(--color-brass)] text-[var(--color-on-brass)]" : x.on ? "ring-1 ring-[var(--color-brass)] text-[var(--color-brass)]" : "ring-1 ring-[var(--color-hairline-strong)] text-[var(--color-muted)]"
                   }`}
                 >
@@ -305,10 +305,10 @@ export default function Checkout() {
             {phase === "gate" && (
               <>
                 {noraNote && (
-                  <div className="mb-8 flex items-start gap-3 rounded-[14px] bg-[var(--color-raised)] p-4 ring-1 ring-[var(--color-hairline)]">
+                  <div className="mb-8 flex items-start gap-3 rounded-none bg-[var(--color-raised)] p-4 ring-1 ring-[var(--color-hairline)]">
                     <NoraAvatar size={36} status />
                     <p className="text-[14px] leading-relaxed">
-                      <span className="font-semibold">{PERSONA.name}</span>
+                      <span className="font-medium">{PERSONA.name}</span>
                       <span className="text-[var(--color-muted)]"> · </span>
                       {noraNote}
                     </p>
@@ -343,7 +343,7 @@ export default function Checkout() {
                     <input type="radio" name="address" className="peer sr-only" checked={address === a.id} onChange={() => setAddress(a.id)} />
                     <span
                       data-nora={`address-${a.id}`}
-                      className="flex h-full gap-3 rounded-[12px] border border-[var(--color-hairline-strong)] p-4 transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/10 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] hover:border-[var(--color-ivory)]/40"
+                      className="flex h-full gap-3 rounded-none border border-[var(--color-hairline-strong)] p-4 transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/10 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] hover:border-[var(--color-ivory)]/40"
                     >
                       <MapPin size={18} strokeWidth={1.4} className="mt-0.5 shrink-0 text-[var(--color-muted)]" aria-hidden />
                       <span>
@@ -360,7 +360,7 @@ export default function Checkout() {
             </Section>
 
             <Section title="Delivery window">
-              <div role="tablist" aria-label="Delivery day" className="mb-4 inline-flex rounded-[10px] border border-[var(--color-hairline-strong)] p-1">
+              <div role="tablist" aria-label="Delivery day" className="mb-4 inline-flex rounded-none border border-[var(--color-hairline-strong)] p-1">
                 {(Object.keys(SLOTS) as (keyof typeof SLOTS)[]).map((d) => (
                   <button
                     key={d}
@@ -371,7 +371,7 @@ export default function Checkout() {
                       setDay(d);
                       setSlot(SLOTS[d][0]);
                     }}
-                    className={`h-9 rounded-[7px] px-4 text-[14px] transition-colors ${day === d ? "bg-[var(--color-raised-2)] text-[var(--color-ivory)]" : "text-[var(--color-muted)] hover:text-[var(--color-ivory)]"}`}
+                    className={`h-9 rounded-none px-4 text-[14px] transition-colors ${day === d ? "bg-[var(--color-raised-2)] text-[var(--color-ivory)]" : "text-[var(--color-muted)] hover:text-[var(--color-ivory)]"}`}
                   >
                     {d}
                   </button>
@@ -383,7 +383,7 @@ export default function Checkout() {
                   {SLOTS[day].map((s) => (
                     <label key={s} className="cursor-pointer">
                       <input type="radio" name="slot" className="peer sr-only" checked={slot === s} onChange={() => setSlot(s)} />
-                      <span data-nora={`slot-${s}`} className="tnum flex h-12 items-center justify-center rounded-[10px] border border-[var(--color-hairline-strong)] text-[14px] transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/10 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] hover:border-[var(--color-ivory)]/40">
+                      <span data-nora={`slot-${s}`} className="tnum flex h-12 items-center justify-center rounded-none border border-[var(--color-hairline-strong)] text-[14px] transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/10 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] hover:border-[var(--color-ivory)]/40">
                         {s}
                       </span>
                     </label>
@@ -394,7 +394,7 @@ export default function Checkout() {
 
             <Section title="Pay with" action={<button className="btn-text text-[14px]">Change</button>}>
               <div className="flex items-center gap-3" data-nora="pay-with">
-                <span className="grid size-10 place-items-center rounded-[8px] border border-[var(--color-hairline-strong)] text-[var(--color-muted)]">
+                <span className="grid size-10 place-items-center rounded-none border border-[var(--color-hairline-strong)] text-[var(--color-muted)]">
                   <Landmark size={18} strokeWidth={1.4} aria-hidden />
                 </span>
                 <div>
@@ -410,7 +410,7 @@ export default function Checkout() {
                   const p = byId(l.id);
                   return (
                     <li key={l.id} className="grid grid-cols-[72px_1fr] gap-4 py-4 first:pt-0 sm:grid-cols-[72px_1fr_auto] sm:items-center">
-                      <div className="size-[72px] overflow-hidden rounded-[10px] border border-[var(--color-hairline)]">
+                      <div className="size-[72px] overflow-hidden rounded-none border border-[var(--color-hairline)]">
                         <ProductArt category={p.category} brand={p.brand} image={p.image} className="size-full" />
                       </div>
                       <div>
@@ -463,7 +463,7 @@ export default function Checkout() {
                         role="radio"
                         aria-checked={subWeeks === w}
                         onClick={() => setSubWeeks(w)}
-                        className={`h-9 rounded-full border px-3.5 text-[13px] transition-colors ${subWeeks === w ? "border-[var(--color-brass)] bg-[var(--color-brass)]/12 text-[var(--color-ivory)]" : "border-[var(--color-hairline-strong)] text-[var(--color-muted)] hover:border-[var(--color-ivory)]/40"}`}
+                        className={`h-9 border px-3.5 text-[13px] transition-colors ${subWeeks === w ? "border-[var(--color-brass)] bg-[var(--color-brass)]/12 text-[var(--color-ivory)]" : "border-[var(--color-hairline-strong)] text-[var(--color-muted)] hover:border-[var(--color-ivory)]/40"}`}
                       >
                         {everyLabel(w)}
                       </button>
@@ -506,7 +506,7 @@ export default function Checkout() {
                   {[...TIPS, "custom" as const].map((v) => (
                     <label key={v} className="cursor-pointer">
                       <input type="radio" name="tip" className="peer sr-only" checked={tip === v} onChange={() => setTip(v)} />
-                      <span className="tnum flex h-11 items-center justify-center rounded-[10px] border border-[var(--color-hairline-strong)] text-[14px] transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/12 peer-checked:text-[var(--color-ivory)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] text-[var(--color-muted)] hover:border-[var(--color-ivory)]/40">
+                      <span className="tnum flex h-11 items-center justify-center rounded-none border border-[var(--color-hairline-strong)] text-[14px] transition-colors peer-checked:border-[var(--color-brass)] peer-checked:bg-[var(--color-brass)]/12 peer-checked:text-[var(--color-ivory)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brass)] text-[var(--color-muted)] hover:border-[var(--color-ivory)]/40">
                         {v === "custom" ? "Custom" : `${v}%`}
                       </span>
                     </label>

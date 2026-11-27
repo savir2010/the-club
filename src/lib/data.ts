@@ -37,7 +37,21 @@ export type Product = {
   rating: number;
   review_count: number;
   source_url?: string;
+  /** Optional second photograph (detail, texture, open pack). Shown on hover in the product grid. */
+  image_alt?: string;
 };
+
+/**
+ * Editorial plates: every product photo is set on one warm ground at 4:5 (public/img/products/editorial,
+ * made from the menu photos). The alternate plate is a close detail of the same pack on a deeper ground,
+ * used until a real second photograph is supplied as `image_alt` in the catalog.
+ */
+export const plateImage = (image: string) => image.replace(/^\/img\/products\/([^/]+)\.jpg$/, "/img/products/editorial/$1.jpg");
+/** The same plate with its grey ground cut out (public/img/products/cutout, made by scripts/cutout-plates.py),
+ * so a tile can sit on the page colour and show the grey only on hover. */
+export const plateCutout = (image: string) => image.replace(/^\/img\/products\/([^/]+)\.jpg$/, "/img/products/cutout/$1.webp");
+export const plateAlt = (p: { image: string; image_alt?: string }) =>
+  p.image_alt ?? p.image.replace(/^\/img\/products\/([^/]+)\.jpg$/, "/img/products/editorial/$1-alt.jpg");
 
 const CATEGORY_NAMES: Category[] = ["Flower", "Pre-rolls", "Vapes", "Edibles", "Concentrates", "Topicals"];
 

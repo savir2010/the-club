@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Aurora } from "@/components/Aurora";
 import { JoinArrival } from "@/components/JoinTransition";
 import { MEMBER, PERSONA } from "@/lib/data";
 import { useSession } from "@/lib/session";
@@ -17,10 +16,13 @@ export default function Join() {
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       {/* Atmosphere panel */}
       <aside className="relative hidden overflow-hidden lg:sticky lg:top-0 lg:block lg:h-dvh lg:self-start" aria-hidden>
-        <Aurora />
-        <div className="absolute inset-x-12 bottom-12">
-          <p className="display max-w-[14ch] text-[44px] leading-[1.05]">Join the Club.</p>
-          <p className="mt-4 max-w-[36ch] text-[15px] text-[var(--color-muted)]">
+        {/* a still from the estate film, the same image the home page opens on */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/media/hero-poster.jpg" alt="" className="absolute inset-0 size-full scale-[1.08] object-cover object-[60%_50%] motion-safe:animate-[fade-in_1400ms_var(--ease-out)_both]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(17_17_17/0.2)_0%,rgb(17_17_17/0.15)_45%,rgb(17_17_17/0.72)_100%)]" />
+        <div className="absolute inset-x-12 bottom-12 text-[#FAF9F6]">
+          <p className="display max-w-[14ch] text-[56px] leading-[1.02]">Join the Club.</p>
+          <p className="mt-5 max-w-[36ch] text-[15px] text-[#FAF9F6]/80">
             About five minutes. Every step here is a demo. Nothing you enter is stored.
           </p>
         </div>
@@ -31,7 +33,7 @@ export default function Join() {
         <header className="flex h-[76px] items-center justify-between px-5 sm:px-10">
           <Wordmark href="/shop" />
           {!done && (
-            <Link href="/shop" className="text-[14px] text-[var(--color-muted)] hover:text-[var(--color-ivory)]">
+            <Link href="/shop" className="nav-link smallcaps text-[var(--color-muted)]">
               Back to the shop
             </Link>
           )}
@@ -57,7 +59,7 @@ export default function Join() {
                   I&rsquo;ll find it, fill your cart and have it brought to your door.
                 </p>
               </div>
-              <Link href="/shop" className="btn btn-lg btn-primary mt-10 rounded-full">
+              <Link href="/shop" className="btn btn-lg btn-primary mt-10">
                 Start shopping
               </Link>
             </div>

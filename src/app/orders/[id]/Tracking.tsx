@@ -120,7 +120,7 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
                 <circle r="14" style={{ fill: "var(--color-brass)" }} opacity="0.18" />
                 <circle r="6" style={{ fill: "var(--color-ivory)", stroke: "var(--map-road)" }} strokeWidth="2" />
               </g>
-              <text x="500" y="172" textAnchor="middle" style={{ fill: "var(--color-muted)" }} fontSize="12" fontFamily="var(--font-manrope)">You</text>
+              <text x="500" y="172" textAnchor="middle" style={{ fill: "var(--color-muted)" }} fontSize="12" fontFamily="var(--font-cormorant)">You</text>
               {/* Store */}
               <rect x="62" y="292" width="16" height="16" rx="3" style={{ fill: "var(--color-muted)" }} />
               {/* Driver */}
@@ -157,7 +157,7 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
                   <dd className="mt-1 text-[15px] leading-snug">{trip ? `${trip.vehicle.color} ${trip.vehicle.make} ${trip.vehicle.model}` : "…"}</dd>
                 </div>
               </dl>
-              <p className="mt-5 flex items-start gap-2.5 rounded-[10px] bg-[var(--color-canvas)] p-3.5 text-[14px]">
+              <p className="mt-5 flex items-start gap-2.5 rounded-none bg-[var(--color-canvas)] p-3.5 text-[14px]">
                 <IdCard size={18} strokeWidth={1.4} className="mt-0.5 shrink-0 text-[var(--color-brass)]" aria-hidden />
                 Your driver will check your ID at the door.
               </p>
@@ -181,7 +181,7 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
                           setEditing(false);
                         }}
                         aria-pressed={tip === v}
-                        className={`tnum h-10 rounded-[10px] border text-[14px] ${tip === v ? "border-[var(--color-brass)] bg-[var(--color-brass)]/12" : "border-[var(--color-hairline-strong)] text-[var(--color-muted)]"}`}
+                        className={`tnum h-10 rounded-none border text-[14px] ${tip === v ? "border-[var(--color-brass)] bg-[var(--color-brass)]/12" : "border-[var(--color-hairline-strong)] text-[var(--color-muted)]"}`}
                       >
                         {money(v)}
                       </button>
@@ -196,7 +196,7 @@ export function Tracking({ id, initialTip = 5, slot, to }: { id: string; initial
                 href={`/orders/${id}/trip`}
                 className="group flex items-center gap-4 rounded-[var(--radius-panel)] border border-[var(--color-hairline)] bg-[var(--color-raised)] p-5 transition-colors hover:border-[var(--color-brass)]/50"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-[10px] bg-[var(--color-brass)]/12 text-[var(--color-brass)]">
+                <span className="grid size-11 shrink-0 place-items-center rounded-none bg-[var(--color-brass)]/12 text-[var(--color-brass)]">
                   <FileCheck2 size={20} strokeWidth={1.5} aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">

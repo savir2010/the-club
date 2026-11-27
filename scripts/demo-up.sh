@@ -60,9 +60,13 @@ echo "  ────────────────────────
 [ -n "$URL" ] && echo "  Open on any device:  $URL/shop"
 echo "  On this Mac:         http://localhost:$PORT/shop"
 if echo "$TEXTING" | grep -q '"active":true'; then
-  echo "  Texting Nora:        on (people who join with their mobile can text this Mac)"
+  if echo "$TEXTING" | grep -q '"provider":"twilio"'; then
+    echo "  Texting Nora:        on, through Twilio (check: curl localhost:8100/sms/status)"
+  else
+    echo "  Texting Nora:        on (people who join with their mobile can text this Mac)"
+  fi
 else
-  echo "  Texting Nora:        OFF. Check $LOG/agent.log (Full Disk Access for this terminal?)"
+  echo "  Texting Nora:        OFF. Check $LOG/agent.log (Full Disk Access for this terminal, or the Twilio settings?)"
 fi
 echo "  Reset between runs:  curl -X POST localhost:8100/sms/reset"
 echo "  Logs:                $LOG/"
