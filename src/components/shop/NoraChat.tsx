@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUp, Check, Mic, Minus, RotateCcw } from "lucide-react";
+import { CallRepButton } from "@/components/CallRepButton";
 import { sentenceSplitter, useVoice } from "./voice";
 import { MEMBER, PERSONA, bundleFor, byId, money } from "@/lib/data";
 import type { NoraEvent, Pick } from "@/lib/agent/events";
@@ -391,11 +392,14 @@ export function NoraChat() {
     <>
       {pointer.node}
 
+      {/* Bottom right: a real person stacked above Nora. Both step aside while the chat is open. */}
+      <div className={`fixed right-5 bottom-5 z-40 flex flex-col items-end gap-3 sm:items-stretch ${mounted ? "pointer-events-none" : ""}`}>
+      <CallRepButton hidden={mounted} />
       <button
         onClick={() => setChatOpen(true)}
         aria-hidden={mounted}
         tabIndex={mounted ? -1 : 0}
-        className={`launcher-ring group fixed right-5 bottom-5 z-40 flex origin-bottom-right items-center gap-3.5 rounded-full border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-1.5 pr-1.5 shadow-[var(--shadow-float)] transition-[transform,opacity,box-shadow] ease-[var(--ease-out)] hover:-translate-y-0.5 active:scale-95 sm:rounded-none sm:py-2 sm:pr-6 sm:pl-2 ${
+        className={`launcher-ring group relative flex origin-bottom-right items-center gap-3.5 rounded-full border border-[var(--color-hairline-strong)] bg-[var(--color-raised)] p-1.5 pr-1.5 shadow-[var(--shadow-float)] transition-[transform,opacity,box-shadow] ease-[var(--ease-out)] hover:-translate-y-0.5 active:scale-95 sm:rounded-none sm:py-2 sm:pr-6 sm:pl-2 ${
           mounted ? "pointer-events-none scale-50 opacity-0 duration-200" : "scale-100 opacity-100 delay-150 duration-500"
         }`}
         aria-label={`Ask ${PERSONA.name}, your concierge`}
@@ -406,6 +410,7 @@ export function NoraChat() {
           <span className="mt-1 block text-[12px] text-[var(--color-muted)]">Your concierge</span>
         </span>
       </button>
+      </div>
 
       {mounted && (
         <section
